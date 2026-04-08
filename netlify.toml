@@ -4,11 +4,3 @@
 
 [functions]
   node_bundler = "esbuild"
-
-[[redirects]]
-  from   = "/.netlify/functions/*"
-  to     = "/.netlify/functions/:splashvar"
-  status = 200
-
-[dev]
-  framework = "#static"
