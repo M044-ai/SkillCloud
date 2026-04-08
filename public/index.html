@@ -21,193 +21,60 @@
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html, body { width: 100%; height: 100%; background: var(--bg); color: var(--text); font-family: var(--sans); overflow: hidden; }
-
-/* ── STAGE ── */
-#stage {
-  width: 100%; height: 100vh;
-  position: relative;
-  cursor: grab;
-  user-select: none;
-  overflow: hidden;
-}
+#stage { width: 100%; height: 100vh; position: relative; cursor: grab; user-select: none; overflow: hidden; }
 #stage.dragging { cursor: grabbing; }
-
-/* ── MOT ── */
-.word3d {
-  position: absolute;
-  transform-origin: center center;
-  cursor: pointer;
-  white-space: nowrap;
-  font-family: var(--sans);
-  font-weight: 500;
-  letter-spacing: -0.01em;
-  transition: opacity 0.12s;
-  pointer-events: auto;
-}
+.word3d { position: absolute; transform-origin: center center; cursor: pointer; white-space: nowrap; font-family: var(--sans); font-weight: 500; letter-spacing: -0.01em; transition: opacity 0.12s; }
 .word3d:hover { opacity: 0.7 !important; }
-
-/* ── HUD ── */
-#hud {
-  position: absolute;
-  top: 20px; left: 24px;
-  display: flex; flex-direction: column; gap: 6px;
-  pointer-events: none;
-  z-index: 10;
-}
-#hud-title {
-  font-size: 15px; font-weight: 700; color: var(--text);
-  letter-spacing: 0.04em;
-}
-#hud-sub {
-  font-size: 11px; color: var(--muted); font-family: var(--mono);
-}
-#hud-auth {
-  margin-top: 6px;
-  pointer-events: all;
-}
-#btn-login {
-  font-family: var(--mono); font-size: 11px;
-  background: transparent; border: 0.5px solid rgba(255,255,255,0.2);
-  color: var(--text); padding: 5px 12px; border-radius: 6px;
-  cursor: pointer; transition: background 0.15s;
-}
+.cat-label { position: absolute; transform-origin: center center; white-space: nowrap; font-family: var(--mono); font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; pointer-events: none; }
+#hud { position: absolute; top: 20px; left: 24px; display: flex; flex-direction: column; gap: 6px; pointer-events: none; z-index: 10; }
+#hud-title { font-size: 15px; font-weight: 700; color: var(--text); letter-spacing: 0.04em; }
+#hud-sub { font-size: 11px; color: var(--muted); font-family: var(--mono); }
+#hud-auth { margin-top: 6px; pointer-events: all; }
+#btn-login { font-family: var(--mono); font-size: 11px; background: transparent; border: 0.5px solid rgba(255,255,255,0.2); color: var(--text); padding: 5px 12px; border-radius: 6px; cursor: pointer; transition: background 0.15s; }
 #btn-login:hover { background: rgba(255,255,255,0.06); }
-#user-badge {
-  font-family: var(--mono); font-size: 11px;
-  color: var(--muted); display: none;
-}
-#vote-counter {
-  font-family: var(--mono); font-size: 11px; color: var(--muted);
-  display: none;
-}
-
-/* ── LÉGENDE ── */
-#legend {
-  position: absolute; bottom: 20px; left: 24px;
-  display: flex; flex-direction: column; gap: 8px;
-  pointer-events: none; z-index: 10;
-}
+#user-badge { font-family: var(--mono); font-size: 11px; color: var(--muted); display: none; }
+#vote-counter { font-family: var(--mono); font-size: 11px; color: var(--muted); display: none; }
+#legend { position: absolute; bottom: 20px; left: 24px; display: flex; flex-direction: column; gap: 8px; pointer-events: none; z-index: 10; }
 .legend-row { display: flex; align-items: center; gap: 8px; }
 .legend-label { font-family: var(--mono); font-size: 10px; color: var(--muted); }
 .legend-size { display: flex; align-items: center; gap: 6px; }
 .legend-word { font-family: var(--sans); font-weight: 500; color: #4a4845; }
 .ramp { display: flex; align-items: center; gap: 4px; }
 .ramp-dot { width: 8px; height: 8px; border-radius: 50%; }
-
-/* ── PANNEAU COMPÉTENCE ── */
-#panel-wrap {
-  position: absolute; top: 0; right: 0; width: 320px; height: 100%;
-  display: flex; align-items: center; justify-content: center;
-  pointer-events: none; z-index: 20;
-  padding: 20px 16px;
-}
-#panel {
-  background: var(--surface);
-  border: 0.5px solid var(--border);
-  border-radius: 14px;
-  width: 100%;
-  padding: 20px;
-  pointer-events: all;
-  display: none;
-}
-#panel-cat-badge {
-  font-family: var(--mono); font-size: 10px;
-  padding: 3px 10px; border-radius: 20px;
-  font-weight: 500; display: inline-block; margin-bottom: 10px;
-}
-#panel-title {
-  font-size: 18px; font-weight: 700;
-  margin-bottom: 4px; line-height: 1.2;
-}
-#panel-stats {
-  font-family: var(--mono); font-size: 11px;
-  color: var(--muted); margin-bottom: 14px;
-  display: flex; gap: 12px; flex-wrap: wrap;
-}
-
-/* Barre de niveau moyen */
+#panel-wrap { position: absolute; top: 0; right: 0; width: 320px; height: 100%; display: flex; align-items: center; justify-content: center; pointer-events: none; z-index: 20; padding: 20px 16px; }
+#panel { background: var(--surface); border: 0.5px solid var(--border); border-radius: 14px; width: 100%; padding: 20px; pointer-events: all; display: none; }
+#panel-cat-badge { font-family: var(--mono); font-size: 10px; padding: 3px 10px; border-radius: 20px; font-weight: 500; display: inline-block; margin-bottom: 10px; }
+#panel-title { font-size: 18px; font-weight: 700; margin-bottom: 4px; line-height: 1.2; }
+#panel-stats { font-family: var(--mono); font-size: 11px; color: var(--muted); margin-bottom: 14px; display: flex; gap: 12px; flex-wrap: wrap; }
 #level-bar-wrap { margin-bottom: 14px; }
 .level-label { font-family: var(--mono); font-size: 10px; color: var(--muted); margin-bottom: 4px; display: flex; justify-content: space-between; }
 .level-track { height: 4px; background: rgba(255,255,255,0.08); border-radius: 2px; overflow: hidden; }
 .level-fill  { height: 100%; border-radius: 2px; transition: width 0.4s; }
-
-/* Barre de votes */
 #votes-bar-wrap { margin-bottom: 16px; }
 .votes-track { height: 3px; background: rgba(255,255,255,0.06); border-radius: 2px; overflow: hidden; }
 .votes-fill  { height: 100%; border-radius: 2px; background: rgba(255,255,255,0.3); transition: width 0.4s; }
-
-/* Prénoms */
 #panel-people { display: flex; flex-direction: column; gap: 4px; margin-bottom: 16px; }
-.person-row {
-  display: flex; align-items: center; justify-content: space-between;
-  font-size: 13px; padding: 5px 0;
-  border-bottom: 0.5px solid var(--border);
-}
+.person-row { display: flex; align-items: center; justify-content: space-between; font-size: 13px; padding: 5px 0; border-bottom: 0.5px solid var(--border); }
 .person-name { font-weight: 500; }
 .person-level { font-family: var(--mono); font-size: 10px; }
-.lvl-1 { color: #85B7EB; }
-.lvl-2 { color: #EF9F27; }
-.lvl-3 { color: #5DCAA5; }
+.lvl-1 { color: #85B7EB; } .lvl-2 { color: #EF9F27; } .lvl-3 { color: #5DCAA5; }
 .lvl-star { letter-spacing: 1px; }
-
-/* Bouton vote */
-#btn-vote {
-  width: 100%;
-  font-family: var(--mono); font-size: 12px; font-weight: 500;
-  padding: 10px; border-radius: 8px;
-  border: 0.5px solid rgba(255,255,255,0.15);
-  background: rgba(255,255,255,0.04);
-  color: var(--text); cursor: pointer;
-  transition: background 0.15s, border-color 0.15s;
-  display: flex; align-items: center; justify-content: center; gap: 8px;
-}
-#btn-vote:hover:not(:disabled)  { background: rgba(255,255,255,0.09); border-color: rgba(255,255,255,0.3); }
+#btn-vote { width: 100%; font-family: var(--mono); font-size: 12px; font-weight: 500; padding: 10px; border-radius: 8px; border: 0.5px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.04); color: var(--text); cursor: pointer; transition: background 0.15s, border-color 0.15s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+#btn-vote:hover:not(:disabled) { background: rgba(255,255,255,0.09); border-color: rgba(255,255,255,0.3); }
 #btn-vote:disabled { opacity: 0.4; cursor: default; }
-#btn-vote.voted   { border-color: #5DCAA5; color: #5DCAA5; }
+#btn-vote.voted { border-color: #5DCAA5; color: #5DCAA5; }
 #btn-vote.voted:hover { background: rgba(93,202,165,0.06); }
-
-#btn-close {
-  float: right; font-size: 11px; font-family: var(--mono);
-  background: transparent; border: 0.5px solid var(--border);
-  color: var(--muted); padding: 3px 8px; border-radius: 5px;
-  cursor: pointer; margin-bottom: 12px;
-}
+#btn-close { float: right; font-size: 11px; font-family: var(--mono); background: transparent; border: 0.5px solid var(--border); color: var(--muted); padding: 3px 8px; border-radius: 5px; cursor: pointer; margin-bottom: 12px; }
 #btn-close:hover { color: var(--text); }
-
-#panel-login-hint {
-  font-family: var(--mono); font-size: 10px;
-  color: var(--muted); text-align: center;
-  margin-top: 8px; display: none;
-}
-
-/* ── TOAST ── */
-#toast {
-  position: absolute; bottom: 24px; left: 50%;
-  transform: translateX(-50%);
-  font-family: var(--mono); font-size: 12px;
-  background: var(--surface); border: 0.5px solid var(--border);
-  padding: 8px 16px; border-radius: 8px;
-  opacity: 0; pointer-events: none;
-  transition: opacity 0.2s;
-  z-index: 100;
-}
+#panel-login-hint { font-family: var(--mono); font-size: 10px; color: var(--muted); text-align: center; margin-top: 8px; display: none; }
+#toast { position: absolute; bottom: 24px; left: 50%; transform: translateX(-50%); font-family: var(--mono); font-size: 12px; background: var(--surface); border: 0.5px solid var(--border); padding: 8px 16px; border-radius: 8px; opacity: 0; pointer-events: none; transition: opacity 0.2s; z-index: 100; }
 #toast.show { opacity: 1; }
-
-/* ── SPINNER ── */
-#loader {
-  position: absolute; inset: 0;
-  display: flex; align-items: center; justify-content: center;
-  background: var(--bg); z-index: 50;
-  font-family: var(--mono); font-size: 12px; color: var(--muted);
-}
+#loader { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: var(--bg); z-index: 50; font-family: var(--mono); font-size: 12px; color: var(--muted); }
 </style>
 </head>
 <body>
-
 <div id="loader">chargement des compétences…</div>
-
 <div id="stage">
-
   <div id="hud">
     <p id="hud-title">Skillcloud · promo IA</p>
     <p id="hud-sub">glisser pour faire tourner · cliquer pour explorer</p>
@@ -217,7 +84,6 @@ html, body { width: 100%; height: 100%; background: var(--bg); color: var(--text
     </div>
     <p id="vote-counter"></p>
   </div>
-
   <div id="legend">
     <div class="legend-row">
       <span class="legend-label">taille = votes</span>
@@ -229,7 +95,7 @@ html, body { width: 100%; height: 100%; background: var(--bg); color: var(--text
     </div>
     <div class="legend-row">
       <span class="legend-label">couleur = rarété</span>
-      <div class="ramp" id="legend-ramp">
+      <div class="ramp">
         <span class="ramp-dot" style="background:#4a4845"></span>
         <span class="legend-label">commun</span>
         <span class="ramp-dot" style="background:#7F77DD"></span>
@@ -237,36 +103,21 @@ html, body { width: 100%; height: 100%; background: var(--bg); color: var(--text
       </div>
     </div>
   </div>
-
   <div id="panel-wrap">
     <div id="panel">
       <button id="btn-close" onclick="closePanel()">fermer</button>
       <span id="panel-cat-badge"></span>
       <h2 id="panel-title"></h2>
       <div id="panel-stats"></div>
-
       <div id="level-bar-wrap">
-        <div class="level-label">
-          <span>niveau moyen</span>
-          <span id="level-val"></span>
-        </div>
-        <div class="level-track">
-          <div class="level-fill" id="level-fill" style="width:0%"></div>
-        </div>
+        <div class="level-label"><span>niveau moyen</span><span id="level-val"></span></div>
+        <div class="level-track"><div class="level-fill" id="level-fill" style="width:0%"></div></div>
       </div>
-
       <div id="votes-bar-wrap">
-        <div class="level-label">
-          <span>souhaits d'atelier</span>
-          <span id="votes-val"></span>
-        </div>
-        <div class="votes-track">
-          <div class="votes-fill" id="votes-fill" style="width:0%"></div>
-        </div>
+        <div class="level-label"><span>souhaits d'atelier</span><span id="votes-val"></span></div>
+        <div class="votes-track"><div class="votes-fill" id="votes-fill" style="width:0%"></div></div>
       </div>
-
       <div id="panel-people"></div>
-
       <button id="btn-vote" onclick="toggleVote()" disabled>
         <span id="vote-btn-text">Ajouter à mes souhaits</span>
         <span id="vote-btn-count" style="opacity:0.5"></span>
@@ -274,82 +125,91 @@ html, body { width: 100%; height: 100%; background: var(--bg); color: var(--text
       <p id="panel-login-hint">Connectez-vous avec Discord pour voter</p>
     </div>
   </div>
-
   <div id="toast"></div>
 </div>
 
-<!-- Supabase JS -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-
 <script>
-// ══════════════════════════════════════════════════════════════
-// CONFIG — remplacer par vos vraies valeurs
-// ══════════════════════════════════════════════════════════════
-const SUPABASE_URL     = 'https://rhqcbghgekqforxhoeip.supabase.co';           // https://xxxx.supabase.co
-const SUPABASE_ANON    = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJocWNiZ2hnZWtxZm9yeGhvZWlwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU1ODAyNTAsImV4cCI6MjA5MTE1NjI1MH0.vjXf-taDKUQKCcMMC5j9riKYpzV96P4KWVGFJfgHd8g';      // clé anon publique
-const API_BASE         = 'https://bahut-ia4-skillcloud.netlify.app';            // https://votre-site.netlify.app
-const DISCORD_CLIENT   = '1491168797485306022';
+const SUPABASE_URL     = 'VOTRE_SUPABASE_URL';
+const SUPABASE_ANON    = 'VOTRE_SUPABASE_ANON_KEY';
+const API_BASE         = 'VOTRE_NETLIFY_URL';
+const DISCORD_CLIENT   = 'VOTRE_DISCORD_CLIENT_ID';
 const DISCORD_REDIRECT = `${API_BASE}/.netlify/functions/discord-auth`;
 const TOTAL_PEOPLE     = 17;
 const MAX_VOTES        = 10;
 const SIZE_MIN         = 12;
 const SIZE_MAX         = 46;
 
-// ══════════════════════════════════════════════════════════════
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
-// ── État ─────────────────────────────────────────────────────
-let skills      = [];       // données complètes depuis skill_cloud_view
-let maxVotes    = 1;        // pour normaliser la taille
-let session     = null;     // { discord_id, discord_username }
-let myVotes     = new Set();// skill_ids votés par l'utilisateur courant
-let currentSkill= null;     // skill ouvert dans le panneau
+let skills       = [];
+let categories   = [];   // [{ id, name, color_hex }]
+let catAnchors   = {};   // catId → { x, y, z } point d'ancrage sur la sphère
+let maxVotes     = 1;
+let session      = null;
+let myVotes      = new Set();
+let currentSkill = null;
 let rotX = 0.3, rotY = 0.5;
 let velX = 0,   velY = 0.0025;
 let dragging = false, wasDrag = false, lastX = 0, lastY = 0;
-const elems  = [];          // éléments DOM des mots
+const skillElems = [];
+const catElems   = [];   // labels de catégorie
 
-// ── Couleur interpolée (gris → couleur catégorie) ────────────
+// ── Couleur ────────────────────────────────────────────────────
 function hexToRgb(hex) {
-  const r = parseInt(hex.slice(1,3),16);
-  const g = parseInt(hex.slice(3,5),16);
-  const b = parseInt(hex.slice(5,7),16);
-  return [r,g,b];
+  return [parseInt(hex.slice(1,3),16), parseInt(hex.slice(3,5),16), parseInt(hex.slice(5,7),16)];
 }
-function lerpColor(fromHex, toHex, t) {
-  const [r1,g1,b1] = hexToRgb(fromHex);
-  const [r2,g2,b2] = hexToRgb(toHex);
-  const r = Math.round(r1 + (r2-r1)*t);
-  const g = Math.round(g1 + (g2-g1)*t);
-  const b = Math.round(b1 + (b2-b1)*t);
-  return `rgb(${r},${g},${b})`;
+function lerpColor(a, b, t) {
+  const [r1,g1,b1] = hexToRgb(a), [r2,g2,b2] = hexToRgb(b);
+  return `rgb(${Math.round(r1+(r2-r1)*t)},${Math.round(g1+(g2-g1)*t)},${Math.round(b1+(b2-b1)*t)})`;
 }
 function wordColor(skill) {
-  const rarity = 1 - Math.min(skill.declarers_count / TOTAL_PEOPLE, 1);
-  const catColor = skill.color_hex || '#534AB7';
-  return lerpColor('#4a4845', catColor, rarity);
+  const rarity = 1 - Math.min((skill.declarers_count||0) / TOTAL_PEOPLE, 1);
+  return lerpColor('#4a4845', skill.color_hex || '#534AB7', rarity);
 }
 function wordSize(skill) {
-  if (maxVotes <= 0) return SIZE_MIN;
-  const t = skill.votes_count / maxVotes;
+  const t = (skill.votes_count||0) / maxVotes;
   return Math.round(SIZE_MIN + t * (SIZE_MAX - SIZE_MIN));
 }
 
-// ── Sphère de Fibonacci ──────────────────────────────────────
-function fibonacciSphere(n) {
-  return Array.from({ length: n }, (_, i) => {
+// ── Sphère + placement par pôle ────────────────────────────────
+function spherePoint(phi, theta, r) {
+  return { x: r*Math.sin(phi)*Math.cos(theta), y: r*Math.sin(phi)*Math.sin(theta), z: r*Math.cos(phi) };
+}
+
+// Distribue les ancres de catégories uniformément sur la sphère (Fibonacci)
+function computeCatAnchors() {
+  catAnchors = {};
+  const n = categories.length;
+  if (!n) return;
+  categories.forEach((cat, i) => {
     const phi   = Math.acos(1 - 2*(i+0.5)/n);
     const theta = Math.PI * (1 + Math.sqrt(5)) * i;
-    return {
-      x: 0.78 * Math.sin(phi) * Math.cos(theta),
-      y: 0.78 * Math.sin(phi) * Math.sin(theta),
-      z: 0.78 * Math.cos(phi),
-    };
+    catAnchors[cat.id] = spherePoint(phi, theta, 0.55);
   });
 }
-let positions = [];
 
-// ── Rendu 3D ─────────────────────────────────────────────────
+// Place une compétence autour de l'ancre de sa catégorie
+// avec un bruit pseudo-aléatoire reproductible (basé sur l'index)
+function skillPosition(skill, idx) {
+  const anchor = catAnchors[skill.category_id];
+  if (!anchor) {
+    // Pas de catégorie → sphère extérieure aléatoire
+    const phi   = Math.acos(1 - 2*(idx+0.5) / Math.max(skills.length,1));
+    const theta = Math.PI * (1 + Math.sqrt(5)) * idx;
+    return spherePoint(phi, theta, 0.82);
+  }
+  // Bruit autour de l'ancre : décalage angulaire limité
+  const spread = 0.38;
+  const seed   = idx * 2.399963;
+  const dPhi   = (((seed * 7.3) % 1) - 0.5) * spread;
+  const dTheta = (((seed * 3.7) % 1) - 0.5) * spread * 2;
+  const phi    = Math.acos(Math.max(-1, Math.min(1, anchor.z / 0.55))) + dPhi;
+  const theta  = Math.atan2(anchor.y, anchor.x) + dTheta;
+  return spherePoint(phi, theta, 0.78 + (((seed * 5.1) % 1) - 0.5) * 0.12);
+}
+
+// ── Rendu 3D ──────────────────────────────────────────────────
 function rot(p) {
   let {x,y,z} = p;
   const y1 = y*Math.cos(rotX) - z*Math.sin(rotX);
@@ -359,25 +219,41 @@ function rot(p) {
   return { x:x2, y:y1, z:z2 };
 }
 
+const stage = document.getElementById('stage');
+
 function render() {
   const W = stage.offsetWidth, H = stage.offsetHeight, fov = 1.8;
-  elems.forEach((el, i) => {
-    if (!positions[i]) return;
-    const r  = rot(positions[i]);
+
+  // Mots compétences
+  skillElems.forEach((el, i) => {
+    const pos = skills[i]?._pos;
+    if (!pos) return;
+    const r = rot(pos);
     const sc = fov / (fov - r.z * 0.6);
-    const sx = W/2 + r.x * W * 0.4 * sc;
-    const sy = H/2 + r.y * H * 0.42 * sc;
     const depth = (r.z + 1) / 2;
-    const s  = skills[i];
-    const fs = wordSize(s);
-    el.style.fontSize  = fs + 'px';
-    el.style.color     = wordColor(s);
-    el.style.opacity   = (0.25 + depth * 0.75).toFixed(2);
-    el.style.left      = Math.round(sx) + 'px';
-    el.style.top       = Math.round(sy) + 'px';
-    el.style.transform = `translate(-50%,-50%) scale(${(0.65 + depth*0.35).toFixed(2)})`;
-    el.style.zIndex    = Math.round(depth * 100);
+    el.style.fontSize      = wordSize(skills[i]) + 'px';
+    el.style.color         = wordColor(skills[i]);
+    el.style.opacity       = (0.25 + depth * 0.75).toFixed(2);
+    el.style.left          = Math.round(W/2 + r.x * W * 0.4 * sc) + 'px';
+    el.style.top           = Math.round(H/2 + r.y * H * 0.42 * sc) + 'px';
+    el.style.transform     = `translate(-50%,-50%) scale(${(0.65+depth*0.35).toFixed(2)})`;
+    el.style.zIndex        = Math.round(depth * 100);
     el.style.pointerEvents = depth > 0.1 ? 'auto' : 'none';
+  });
+
+  // Labels catégories (sur l'ancre)
+  catElems.forEach((el, i) => {
+    const cat    = categories[i];
+    const anchor = catAnchors[cat.id];
+    if (!anchor) return;
+    const r = rot(anchor);
+    const sc = fov / (fov - r.z * 0.6);
+    const depth = (r.z + 1) / 2;
+    el.style.left      = Math.round(W/2 + r.x * W * 0.4 * sc) + 'px';
+    el.style.top       = Math.round(H/2 + r.y * H * 0.42 * sc) + 'px';
+    el.style.transform = `translate(-50%,-50%) scale(${(0.6+depth*0.4).toFixed(2)})`;
+    el.style.zIndex    = Math.round(depth * 100) + 1;
+    el.style.opacity   = (0.15 + depth * 0.45).toFixed(2);
   });
 }
 
@@ -387,43 +263,54 @@ function loop() {
   requestAnimationFrame(loop);
 }
 
-// ── Construit les éléments DOM ───────────────────────────────
-const stage = document.getElementById('stage');
-
+// ── Construction DOM ──────────────────────────────────────────
 function buildWords() {
-  elems.forEach(e => e.remove());
-  elems.length = 0;
-  positions = fibonacciSphere(skills.length);
+  skillElems.forEach(e => e.remove()); skillElems.length = 0;
+  catElems.forEach(e => e.remove());   catElems.length   = 0;
 
+  computeCatAnchors();
+
+  // Labels catégories
+  categories.forEach((cat, i) => {
+    const el = document.createElement('div');
+    el.className   = 'cat-label';
+    el.textContent = cat.name;
+    el.style.fontSize = '10px';
+    el.style.color    = (cat.color_hex || '#888780') + '99';
+    stage.appendChild(el);
+    catElems.push(el);
+  });
+
+  // Mots compétences
   skills.forEach((s, i) => {
+    s._pos = skillPosition(s, i);
     const el = document.createElement('div');
     el.className = 'word3d';
     el.textContent = s.name;
-    el.dataset.idx = i;
     el.addEventListener('click', () => { if (!wasDrag) openPanel(i); });
     stage.appendChild(el);
-    elems.push(el);
+    skillElems.push(el);
   });
 }
 
-// ── Chargement initial ───────────────────────────────────────
-async function loadSkills() {
-  const { data, error } = await sb
-    .from('skill_cloud_view')
-    .select('*');
-
-  if (error) { console.error(error); return; }
-  skills   = data || [];
-  maxVotes = Math.max(1, ...skills.map(s => s.votes_count || 0));
+// ── Chargement ────────────────────────────────────────────────
+async function loadData() {
+  const [catRes, skillRes] = await Promise.all([
+    sb.from('categories').select('id, name, color_hex').order('name'),
+    sb.from('skill_cloud_view').select('*'),
+  ]);
+  categories = catRes.data  || [];
+  skills     = skillRes.data || [];
+  maxVotes   = Math.max(1, ...skills.map(s => s.votes_count || 0));
   buildWords();
   document.getElementById('loader').style.display = 'none';
 }
 
-// ── Realtime ─────────────────────────────────────────────────
 function subscribeRealtime() {
   sb.channel('skillcloud')
     .on('postgres_changes', { event: '*', schema: 'public', table: 'declarations' }, refresh)
     .on('postgres_changes', { event: '*', schema: 'public', table: 'votes' },        refresh)
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'categories' },   refresh)
     .subscribe();
 }
 
@@ -431,12 +318,16 @@ let refreshTimer = null;
 async function refresh() {
   clearTimeout(refreshTimer);
   refreshTimer = setTimeout(async () => {
-    const { data } = await sb.from('skill_cloud_view').select('*');
-    if (!data) return;
-    const prevLen = skills.length;
-    skills   = data;
-    maxVotes = Math.max(1, ...skills.map(s => s.votes_count || 0));
-    if (skills.length !== prevLen) buildWords();
+    const [catRes, skillRes] = await Promise.all([
+      sb.from('categories').select('id, name, color_hex').order('name'),
+      sb.from('skill_cloud_view').select('*'),
+    ]);
+    const prevCatLen   = categories.length;
+    const prevSkillLen = skills.length;
+    categories = catRes.data  || [];
+    skills     = skillRes.data || [];
+    maxVotes   = Math.max(1, ...skills.map(s => s.votes_count || 0));
+    if (categories.length !== prevCatLen || skills.length !== prevSkillLen) buildWords();
     if (currentSkill) {
       const updated = skills.find(s => s.id === currentSkill.id);
       if (updated) { currentSkill = updated; refreshPanel(); }
@@ -445,210 +336,123 @@ async function refresh() {
   }, 300);
 }
 
-// ── Drag ─────────────────────────────────────────────────────
-stage.addEventListener('mousedown',  e => { dragging = true; wasDrag = false; lastX = e.clientX; lastY = e.clientY; stage.classList.add('dragging'); });
+// ── Drag ──────────────────────────────────────────────────────
+stage.addEventListener('mousedown',  e => { dragging=true; wasDrag=false; lastX=e.clientX; lastY=e.clientY; stage.classList.add('dragging'); });
 window.addEventListener('mousemove', e => {
   if (!dragging) return;
-  const dx = e.clientX - lastX, dy = e.clientY - lastY;
-  if (Math.abs(dx)+Math.abs(dy) > 3) wasDrag = true;
-  velY = dx * 0.003; velX = dy * 0.003;
-  rotY += dx * 0.007; rotX += dy * 0.007;
-  lastX = e.clientX; lastY = e.clientY;
+  const dx=e.clientX-lastX, dy=e.clientY-lastY;
+  if (Math.abs(dx)+Math.abs(dy)>3) wasDrag=true;
+  velY=dx*0.003; velX=dy*0.003; rotY+=dx*0.007; rotX+=dy*0.007;
+  lastX=e.clientX; lastY=e.clientY;
 });
-window.addEventListener('mouseup',   () => { dragging = false; stage.classList.remove('dragging'); });
-stage.addEventListener('touchstart', e => { dragging = true; wasDrag = false; lastX = e.touches[0].clientX; lastY = e.touches[0].clientY; }, { passive: true });
+window.addEventListener('mouseup',   () => { dragging=false; stage.classList.remove('dragging'); });
+stage.addEventListener('touchstart', e => { dragging=true; wasDrag=false; lastX=e.touches[0].clientX; lastY=e.touches[0].clientY; }, {passive:true});
 stage.addEventListener('touchmove',  e => {
   if (!dragging) return;
-  const dx = e.touches[0].clientX - lastX, dy = e.touches[0].clientY - lastY;
-  if (Math.abs(dx)+Math.abs(dy) > 3) wasDrag = true;
-  velY = dx * 0.003; velX = dy * 0.003;
-  rotY += dx * 0.007; rotX += dy * 0.007;
-  lastX = e.touches[0].clientX; lastY = e.touches[0].clientY;
-}, { passive: true });
-stage.addEventListener('touchend', () => { dragging = false; });
+  const dx=e.touches[0].clientX-lastX, dy=e.touches[0].clientY-lastY;
+  if (Math.abs(dx)+Math.abs(dy)>3) wasDrag=true;
+  velY=dx*0.003; velX=dy*0.003; rotY+=dx*0.007; rotX+=dy*0.007;
+  lastX=e.touches[0].clientX; lastY=e.touches[0].clientY;
+}, {passive:true});
+stage.addEventListener('touchend', () => { dragging=false; });
 
-// ── Panneau ──────────────────────────────────────────────────
-function levelStars(n) {
-  return '●'.repeat(n) + '○'.repeat(3-n);
-}
-function levelClass(n) { return ['','lvl-1','lvl-2','lvl-3'][n] || ''; }
-function levelLabel(n) { return ['','Découverte','Pratique','Expert'][n] || ''; }
+// ── Panneau ───────────────────────────────────────────────────
+function levelStars(n) { return '●'.repeat(n)+'○'.repeat(3-n); }
+function levelClass(n) { return ['','lvl-1','lvl-2','lvl-3'][n]||''; }
+function levelLabel(n) { return ['','Découverte','Pratique','Expert'][n]||''; }
 
-function openPanel(i) {
-  currentSkill = skills[i];
-  refreshPanel();
-  document.getElementById('panel').style.display = 'block';
-}
-function closePanel() {
-  document.getElementById('panel').style.display = 'none';
-  currentSkill = null;
-}
+function openPanel(i)  { currentSkill=skills[i]; refreshPanel(); document.getElementById('panel').style.display='block'; }
+function closePanel()  { document.getElementById('panel').style.display='none'; currentSkill=null; }
 
 function refreshPanel() {
-  const s = currentSkill;
-  if (!s) return;
-
-  // Badge catégorie
+  const s = currentSkill; if (!s) return;
   const badge = document.getElementById('panel-cat-badge');
-  badge.textContent = s.category_name || 'Sans catégorie';
-  badge.style.background = (s.color_hex || '#444441') + '22';
-  badge.style.color       = s.color_hex || '#888780';
-  badge.style.border      = `0.5px solid ${s.color_hex || '#444441'}44`;
-
+  badge.textContent      = s.category_name || 'Sans catégorie';
+  badge.style.background = (s.color_hex||'#444441')+'22';
+  badge.style.color      = s.color_hex||'#888780';
+  badge.style.border     = `0.5px solid ${s.color_hex||'#444441'}44`;
   document.getElementById('panel-title').textContent = s.name;
-
-  // Stats
   document.getElementById('panel-stats').innerHTML =
-    `<span>${s.declarers_count || 0} porteur${(s.declarers_count||0)>1?'s':''}</span>` +
-    `<span>${s.votes_count || 0} souhait${(s.votes_count||0)>1?'s':''}</span>`;
-
-  // Barre niveau
-  const avgLvl = parseFloat(s.avg_level) || 0;
-  document.getElementById('level-val').textContent  = avgLvl ? avgLvl.toFixed(1) + '/3' : '–';
-  document.getElementById('level-fill').style.width = ((avgLvl/3)*100).toFixed(0) + '%';
-  document.getElementById('level-fill').style.background = s.color_hex || '#534AB7';
-
-  // Barre votes
-  const vPct = maxVotes > 0 ? Math.round((s.votes_count||0) / maxVotes * 100) : 0;
+    `<span>${s.declarers_count||0} porteur${(s.declarers_count||0)>1?'s':''}</span>`+
+    `<span>${s.votes_count||0} souhait${(s.votes_count||0)>1?'s':''}</span>`;
+  const avgLvl = parseFloat(s.avg_level)||0;
+  document.getElementById('level-val').textContent  = avgLvl ? avgLvl.toFixed(1)+'/3' : '–';
+  document.getElementById('level-fill').style.width = ((avgLvl/3)*100).toFixed(0)+'%';
+  document.getElementById('level-fill').style.background = s.color_hex||'#534AB7';
+  const vPct = maxVotes>0 ? Math.round((s.votes_count||0)/maxVotes*100) : 0;
   document.getElementById('votes-val').textContent  = `${s.votes_count||0} / ${maxVotes} max`;
-  document.getElementById('votes-fill').style.width = vPct + '%';
-
-  // Prénoms + niveaux
-  const people = document.getElementById('panel-people');
+  document.getElementById('votes-fill').style.width = vPct+'%';
   const declarers = Array.isArray(s.declarers) ? s.declarers : [];
-  people.innerHTML = declarers
-    .sort((a,b) => (b.level||0) - (a.level||0))
-    .map(d => `
-      <div class="person-row">
-        <span class="person-name">${d.name}</span>
-        <span class="person-level ${levelClass(d.level)}">
-          <span class="lvl-star">${levelStars(d.level||1)}</span>
-          <span style="margin-left:4px">${levelLabel(d.level||1)}</span>
-        </span>
-      </div>`)
-    .join('');
-
-  // Bouton vote
+  document.getElementById('panel-people').innerHTML = declarers
+    .sort((a,b)=>(b.level||0)-(a.level||0))
+    .map(d=>`<div class="person-row">
+      <span class="person-name">${d.name}</span>
+      <span class="person-level ${levelClass(d.level)}">
+        <span class="lvl-star">${levelStars(d.level||1)}</span>
+        <span style="margin-left:4px">${levelLabel(d.level||1)}</span>
+      </span></div>`).join('');
   updateVoteBtn();
 }
 
 function updateVoteBtn() {
-  const btn   = document.getElementById('btn-vote');
-  const txt   = document.getElementById('vote-btn-text');
-  const count = document.getElementById('vote-btn-count');
-  const hint  = document.getElementById('panel-login-hint');
-
-  if (!session) {
-    btn.disabled = true;
-    btn.classList.remove('voted');
-    txt.textContent  = 'Ajouter à mes souhaits';
-    count.textContent = '';
-    hint.style.display = 'block';
-    return;
-  }
-  hint.style.display = 'none';
-  btn.disabled = false;
-
-  const voted = currentSkill && myVotes.has(currentSkill.id);
-  btn.classList.toggle('voted', voted);
-  txt.textContent   = voted ? 'Retirer de mes souhaits' : 'Ajouter à mes souhaits';
-  count.textContent = `${myVotes.size}/${MAX_VOTES}`;
-
-  // Désactiver si quota atteint et pas encore voté pour cette compétence
-  if (!voted && myVotes.size >= MAX_VOTES) {
-    btn.disabled = true;
-    txt.textContent = 'Quota atteint (10/10)';
-  }
+  const btn=document.getElementById('btn-vote'), txt=document.getElementById('vote-btn-text');
+  const count=document.getElementById('vote-btn-count'), hint=document.getElementById('panel-login-hint');
+  if (!session) { btn.disabled=true; btn.classList.remove('voted'); txt.textContent='Ajouter à mes souhaits'; count.textContent=''; hint.style.display='block'; return; }
+  hint.style.display='none'; btn.disabled=false;
+  const voted=currentSkill&&myVotes.has(currentSkill.id);
+  btn.classList.toggle('voted',voted);
+  txt.textContent=voted?'Retirer de mes souhaits':'Ajouter à mes souhaits';
+  count.textContent=`${myVotes.size}/${MAX_VOTES}`;
+  if (!voted&&myVotes.size>=MAX_VOTES) { btn.disabled=true; txt.textContent='Quota atteint (10/10)'; }
 }
-
 function updateVoteCounter() {
-  const ctr = document.getElementById('vote-counter');
-  if (!session) { ctr.style.display = 'none'; return; }
-  ctr.style.display = 'block';
-  ctr.textContent   = `${myVotes.size}/${MAX_VOTES} souhaits`;
+  const ctr=document.getElementById('vote-counter');
+  if (!session) { ctr.style.display='none'; return; }
+  ctr.style.display='block'; ctr.textContent=`${myVotes.size}/${MAX_VOTES} souhaits`;
 }
 
-// ── Vote ─────────────────────────────────────────────────────
+// ── Vote ──────────────────────────────────────────────────────
 async function toggleVote() {
-  if (!session || !currentSkill) return;
-  const method = myVotes.has(currentSkill.id) ? 'DELETE' : 'POST';
-  const res = await fetch(`${API_BASE}/.netlify/functions/vote`, {
-    method,
-    credentials: 'include',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ skill_id: currentSkill.id }),
-  });
-  if (res.ok) {
-    if (method === 'POST') myVotes.add(currentSkill.id);
-    else                   myVotes.delete(currentSkill.id);
-    updateVoteBtn();
-    updateVoteCounter();
-    toast(method === 'POST' ? 'Souhait ajouté ✓' : 'Souhait retiré');
-  } else {
-    const err = await res.json();
-    toast(err.error || 'Erreur');
-  }
+  if (!session||!currentSkill) return;
+  const method=myVotes.has(currentSkill.id)?'DELETE':'POST';
+  const res=await fetch(`${API_BASE}/.netlify/functions/vote`,{method,credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({skill_id:currentSkill.id})});
+  if (res.ok) { if (method==='POST') myVotes.add(currentSkill.id); else myVotes.delete(currentSkill.id); updateVoteBtn(); updateVoteCounter(); toast(method==='POST'?'Souhait ajouté ✓':'Souhait retiré'); }
+  else { const err=await res.json(); toast(err.error||'Erreur'); }
 }
 
-// ── Auth Discord ─────────────────────────────────────────────
+// ── Auth Discord ──────────────────────────────────────────────
 function loginDiscord() {
-  const url = `https://discord.com/api/oauth2/authorize` +
-    `?client_id=${DISCORD_CLIENT}` +
-    `&redirect_uri=${encodeURIComponent(DISCORD_REDIRECT)}` +
-    `&response_type=code&scope=identify`;
-  window.location.href = url;
+  window.location.href=`https://discord.com/api/oauth2/authorize?client_id=${DISCORD_CLIENT}&redirect_uri=${encodeURIComponent(DISCORD_REDIRECT)}&response_type=code&scope=identify`;
 }
-
 async function checkSession() {
   try {
-    const res = await fetch(`${API_BASE}/.netlify/functions/vote`, {
-      method: 'GET', credentials: 'include',
-    });
+    const res=await fetch(`${API_BASE}/.netlify/functions/vote`,{method:'GET',credentials:'include'});
     if (!res.ok) return;
-    const data = await res.json();
-    // Récupère l'identité depuis un endpoint /me (à ajouter) ou depuis le cookie
-    // Pour l'instant on parse le cookie côté client (non-httpOnly en dev)
-    const match = document.cookie.match(/sc_session=([^;]+)/);
+    const data=await res.json();
+    const match=document.cookie.match(/sc_session=([^;]+)/);
     if (match) {
-      try {
-        const payload = JSON.parse(atob(match[1].split('.')[0]));
-        session = payload;
-        myVotes = new Set(data.voted_skill_ids || []);
-        document.getElementById('btn-login').style.display = 'none';
-        document.getElementById('user-badge').style.display = 'inline';
-        document.getElementById('user-badge').textContent = `@${payload.discord_username}`;
-        updateVoteCounter();
-      } catch {}
+      const payload=JSON.parse(atob(match[1].split('.')[0]));
+      session=payload; myVotes=new Set(data.voted_skill_ids||[]);
+      document.getElementById('btn-login').style.display='none';
+      document.getElementById('user-badge').style.display='inline';
+      document.getElementById('user-badge').textContent=`@${payload.discord_username}`;
+      updateVoteCounter();
     }
   } catch {}
 }
 
-// ── Toast ────────────────────────────────────────────────────
+// ── Toast ─────────────────────────────────────────────────────
 let toastTimer;
 function toast(msg) {
-  const el = document.getElementById('toast');
-  el.textContent = msg;
-  el.classList.add('show');
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => el.classList.remove('show'), 2200);
+  const el=document.getElementById('toast'); el.textContent=msg; el.classList.add('show');
+  clearTimeout(toastTimer); toastTimer=setTimeout(()=>el.classList.remove('show'),2200);
 }
 
-// ── Callback OAuth (retour de Discord) ───────────────────────
-const params = new URLSearchParams(location.search);
-if (params.get('auth') === 'success') {
-  history.replaceState({}, '', location.pathname);
-  toast('Connecté avec Discord ✓');
-} else if (params.get('auth') === 'cancelled') {
-  history.replaceState({}, '', location.pathname);
-}
+const params=new URLSearchParams(location.search);
+if (params.get('auth')==='success') { history.replaceState({},'',location.pathname); toast('Connecté avec Discord ✓'); }
+else if (params.get('auth')==='cancelled') { history.replaceState({},'',location.pathname); }
 
-// ── Init ────────────────────────────────────────────────────
-(async () => {
-  await loadSkills();
-  subscribeRealtime();
-  await checkSession();
-  loop();
-})();
+(async()=>{ await loadData(); subscribeRealtime(); await checkSession(); loop(); })();
 </script>
 </body>
 </html>
