@@ -96,7 +96,7 @@ html, body { width: 100%; height: 100%; background: var(--bg); color: var(--text
     <div class="legend-row">
       <span class="legend-label">couleur = rarété</span>
       <div class="ramp">
-        <span class="ramp-dot" style="background:#4a4845"></span>
+        <span class="ramp-dot" style="background:#6b6966"></span>
         <span class="legend-label">commun</span>
         <span class="ramp-dot" style="background:#7F77DD"></span>
         <span class="legend-label">rare</span>
@@ -130,15 +130,15 @@ html, body { width: 100%; height: 100%; background: var(--bg); color: var(--text
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script>
-const SUPABASE_URL     = 'https://rhqcbghgekqforxhoeip.supabase.co';
-const SUPABASE_ANON    = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJocWNiZ2hnZWtxZm9yeGhvZWlwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU1ODAyNTAsImV4cCI6MjA5MTE1NjI1MH0.vjXf-taDKUQKCcMMC5j9riKYpzV96P4KWVGFJfgHd8g';
-const API_BASE         = 'https://bahut-ia4-skillcloud.netlify.app';
-const DISCORD_CLIENT   = 'Cz3QfRI-2DkFm1iTY6rmkqgur1bbBE-k';
+const SUPABASE_URL     = 'VOTRE_SUPABASE_URL';
+const SUPABASE_ANON    = 'VOTRE_SUPABASE_ANON_KEY';
+const API_BASE         = 'VOTRE_NETLIFY_URL';
+const DISCORD_CLIENT   = 'VOTRE_DISCORD_CLIENT_ID';
 const DISCORD_REDIRECT = `${API_BASE}/.netlify/functions/discord-auth`;
 const TOTAL_PEOPLE     = 17;
 const MAX_VOTES        = 10;
-const SIZE_MIN         = 12;
-const SIZE_MAX         = 46;
+const SIZE_MIN         = 16;
+const SIZE_MAX         = 52;
 
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
@@ -165,11 +165,14 @@ function lerpColor(a, b, t) {
 }
 function wordColor(skill) {
   const rarity = 1 - Math.min((skill.declarers_count||0) / TOTAL_PEOPLE, 1);
-  return lerpColor('#4a4845', skill.color_hex || '#534AB7', rarity);
+  return lerpColor('#6b6966', skill.color_hex || '#534AB7', rarity);
 }
 function wordSize(skill) {
-  const t = (skill.votes_count||0) / maxVotes;
-  return Math.round(SIZE_MIN + t * (SIZE_MAX - SIZE_MIN));
+  const vt = (skill.votes_count||0) / maxVotes;
+  // Taille minimale proportionnelle aux porteurs (visible même sans vote)
+  const pt = Math.min((skill.declarers_count||1) / TOTAL_PEOPLE, 1);
+  const base = SIZE_MIN + pt * 10;
+  return Math.round(base + vt * (SIZE_MAX - base));
 }
 
 // ── Sphère + placement par pôle ────────────────────────────────
@@ -233,7 +236,7 @@ function render() {
     const depth = (r.z + 1) / 2;
     el.style.fontSize      = wordSize(skills[i]) + 'px';
     el.style.color         = wordColor(skills[i]);
-    el.style.opacity       = (0.25 + depth * 0.75).toFixed(2);
+    el.style.opacity       = (0.45 + depth * 0.55).toFixed(2);
     el.style.left          = Math.round(W/2 + r.x * W * 0.4 * sc) + 'px';
     el.style.top           = Math.round(H/2 + r.y * H * 0.42 * sc) + 'px';
     el.style.transform     = `translate(-50%,-50%) scale(${(0.65+depth*0.35).toFixed(2)})`;
@@ -253,7 +256,7 @@ function render() {
     el.style.top       = Math.round(H/2 + r.y * H * 0.42 * sc) + 'px';
     el.style.transform = `translate(-50%,-50%) scale(${(0.6+depth*0.4).toFixed(2)})`;
     el.style.zIndex    = Math.round(depth * 100) + 1;
-    el.style.opacity   = (0.15 + depth * 0.45).toFixed(2);
+    el.style.opacity   = (0.35 + depth * 0.45).toFixed(2);
   });
 }
 
@@ -275,8 +278,9 @@ function buildWords() {
     const el = document.createElement('div');
     el.className   = 'cat-label';
     el.textContent = cat.name;
-    el.style.fontSize = '10px';
-    el.style.color    = (cat.color_hex || '#888780') + '99';
+    el.style.fontSize = '11px';
+    el.style.color    = cat.color_hex || '#888780';
+    el.style.letterSpacing = '0.12em';
     stage.appendChild(el);
     catElems.push(el);
   });
