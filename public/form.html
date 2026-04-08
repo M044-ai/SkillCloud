@@ -402,8 +402,8 @@ async function submitForm() {
   // Palette tournante — chaque nouvelle catégorie reçoit une couleur unique
   const PALETTE = [
     '#534AB7','#0F6E56','#993C1D','#185FA5',
-    '#854F0B','#993556','#3B6D11','#A32D2D',
-    '#3C3489','#085041','#712B13','#0C447C',
+    '#854F0B','#993556','#3B6D11','#D85A30',
+    '#3C3489','#1D9E75','#712B13','#378ADD',
   ];
   function nextCatColor() {
     return PALETTE[allCategories.length % PALETTE.length];
@@ -505,3 +505,4 @@ function showFeedback(msg, type) {
 </script>
 </body>
 </html>
+
