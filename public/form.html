@@ -192,8 +192,8 @@ header p  { font-size: 13px; color: var(--muted); font-family: var(--mono); line
 // ══════════════════════════════════════════════════════
 // CONFIG — remplacer par vos valeurs
 // ══════════════════════════════════════════════════════
-const SUPABASE_URL  = 'https://rhqcbghgekqforxhoeip.supabase.co';
-const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJocWNiZ2hnZWtxZm9yeGhvZWlwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU1ODAyNTAsImV4cCI6MjA5MTE1NjI1MH0.vjXf-taDKUQKCcMMC5j9riKYpzV96P4KWVGFJfgHd8g';
+const SUPABASE_URL  = 'VOTRE_SUPABASE_URL';
+const SUPABASE_ANON = 'VOTRE_SUPABASE_ANON_KEY';
 
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
@@ -399,6 +399,16 @@ async function submitForm() {
   btn.disabled = true;
   btn.textContent = 'Enregistrement…';
 
+  // Palette tournante — chaque nouvelle catégorie reçoit une couleur unique
+  const PALETTE = [
+    '#534AB7','#0F6E56','#993C1D','#185FA5',
+    '#854F0B','#993556','#3B6D11','#A32D2D',
+    '#3C3489','#085041','#712B13','#0C447C',
+  ];
+  function nextCatColor() {
+    return PALETTE[allCategories.length % PALETTE.length];
+  }
+
   try {
     for (const row of rows) {
       // 1. Upsert catégorie
@@ -413,14 +423,15 @@ async function submitForm() {
         if (existCat) {
           categoryId = existCat.id;
         } else {
+          const color = nextCatColor();
           const { data: newCat } = await sb
             .from('categories')
-            .insert({ name: row.catName, color_hex: '#888780' })
+            .insert({ name: row.catName, color_hex: color })
             .select('id')
             .single();
           categoryId = newCat?.id;
           // Mise à jour locale immédiate
-          if (newCat) allCategories.push({ id: newCat.id, name: row.catName });
+          if (newCat) allCategories.push({ id: newCat.id, name: row.catName, color_hex: color });
         }
       }
 
