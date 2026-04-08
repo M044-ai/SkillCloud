@@ -20,8 +20,10 @@
   --sans:      'Syne', sans-serif;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
-html, body { width: 100%; height: 100%; background: var(--bg); color: var(--text); font-family: var(--sans); overflow: hidden; }
-#stage { width: 100%; height: 100vh; position: relative; cursor: grab; user-select: none; overflow: hidden; }
+html, body { width: 100%; height: 100%; background: var(--bg); color: var(--text); font-family: var(--sans); overflow: hidden; display: flex; flex-direction: row; }
+#settings-panel { position: relative; left: auto; top: auto; height: 100%; width: 0; flex-shrink: 0; background: rgba(16,16,20,0.98); border-right: 0.5px solid rgba(255,255,255,0.07); z-index: 30; display: flex; flex-direction: column; padding: 0; gap: 0; overflow: hidden; transition: width 0.22s ease; }
+#settings-panel.open { width: 200px; padding: 16px 14px; overflow-y: auto; }
+#stage { flex: 1; height: 100vh; position: relative; cursor: grab; user-select: none; overflow: hidden; }
 #stage.dragging { cursor: grabbing; }
 .word3d { position: absolute; transform-origin: center center; cursor: pointer; font-family: var(--sans); font-weight: 500; letter-spacing: -0.01em; transition: opacity 0.12s; text-align: center; line-height: 1.25; white-space: normal; word-break: keep-all; overflow-wrap: normal; }
 .word3d:hover { opacity: 0.7 !important; }
@@ -73,8 +75,7 @@ html, body { width: 100%; height: 100%; background: var(--bg); color: var(--text
 
 #settings-btn { position: absolute; bottom: 20px; right: 20px; z-index: 30; background: rgba(22,22,26,0.85); border: 0.5px solid rgba(255,255,255,0.12); color: rgba(255,255,255,0.5); font-family: var(--mono); font-size: 11px; padding: 6px 12px; border-radius: 6px; cursor: pointer; transition: all 0.15s; backdrop-filter: blur(4px); }
 #settings-btn:hover { color: var(--text); border-color: rgba(255,255,255,0.25); }
-#settings-panel { position: absolute; left: 0; top: 0; height: 100%; width: 200px; background: rgba(16,16,20,0.96); border-right: 0.5px solid rgba(255,255,255,0.07); z-index: 30; display: flex; flex-direction: column; padding: 16px 14px; gap: 0; transform: translateX(-100%); transition: transform 0.22s ease; backdrop-filter: blur(8px); overflow-y: auto; }
-#settings-panel.open { transform: translateX(0); }
+
 .sp-close { align-self: flex-end; background: transparent; border: none; color: rgba(255,255,255,0.3); font-size: 16px; cursor: pointer; padding: 0 0 12px 0; line-height: 1; }
 .sp-close:hover { color: var(--text); }
 .sp-group { margin-bottom: 18px; }
@@ -88,61 +89,7 @@ html, body { width: 100%; height: 100%; background: var(--bg); color: var(--text
 </style>
 </head>
 <body>
-<div id="loader">chargement des compétences…</div>
-<div id="stage">
-  <div id="hud">
-    <p id="hud-title">Skillcloud · promo IA</p>
-    <p id="hud-sub">glisser pour faire tourner · cliquer pour explorer</p>
-    <div id="hud-auth">
-      <button id="btn-login" onclick="loginDiscord()">Se connecter avec Discord</button>
-      <span id="user-badge"></span>
-    </div>
-    <p id="vote-counter"></p>
-  </div>
-  <div id="legend">
-    <div class="legend-row">
-      <span class="legend-label">taille = votes</span>
-      <div class="legend-size">
-        <span class="legend-word" style="font-size:10px">peu</span>
-        <span class="legend-word" style="font-size:14px">moyen</span>
-        <span class="legend-word" style="font-size:20px">beaucoup</span>
-      </div>
-    </div>
-    <div class="legend-row">
-      <span class="legend-label">couleur = rarété</span>
-      <div class="ramp">
-        <span class="ramp-dot" style="background:#6b6966"></span>
-        <span class="legend-label">commun</span>
-        <span class="ramp-dot" style="background:#7F77DD"></span>
-        <span class="legend-label">rare</span>
-      </div>
-    </div>
-  </div>
-  <div id="panel-wrap">
-    <div id="panel">
-      <button id="btn-close" onclick="closePanel()">fermer</button>
-      <span id="panel-cat-badge"></span>
-      <h2 id="panel-title"></h2>
-      <div id="panel-stats"></div>
-      <div id="level-bar-wrap">
-        <div class="level-label"><span>niveau moyen</span><span id="level-val"></span></div>
-        <div class="level-track"><div class="level-fill" id="level-fill" style="width:0%"></div></div>
-      </div>
-      <div id="votes-bar-wrap">
-        <div class="level-label"><span>souhaits d'atelier</span><span id="votes-val"></span></div>
-        <div class="votes-track"><div class="votes-fill" id="votes-fill" style="width:0%"></div></div>
-      </div>
-      <div id="panel-people"></div>
-      <button id="btn-vote" onclick="toggleVote()" disabled>
-        <span id="vote-btn-text">Ajouter à mes souhaits</span>
-        <span id="vote-btn-count" style="opacity:0.5"></span>
-      </button>
-      <p id="panel-login-hint">Connectez-vous avec Discord pour voter</p>
-    </div>
-  </div>
-  
-  <button id="settings-btn" onclick="toggleSettings()">&#9881; réglages</button>
-  <div id="settings-panel">
+<div id="settings-panel">
     <button class="sp-close" onclick="toggleSettings()">&#10005;</button>
 
     <div class="sp-group">
@@ -200,6 +147,60 @@ html, body { width: 100%; height: 100%; background: var(--bg); color: var(--text
     <button onclick="resetSettings()" style="font-family:var(--mono);font-size:10px;background:transparent;border:0.5px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.3);padding:5px;border-radius:5px;cursor:pointer;margin-top:auto;">réinitialiser</button>
   </div>
 
+<div id="loader">chargement des compétences…</div>
+<div id="stage">
+  <div id="hud">
+    <p id="hud-title">Skillcloud · promo IA</p>
+    <p id="hud-sub">glisser pour faire tourner · cliquer pour explorer</p>
+    <div id="hud-auth">
+      <button id="btn-login" onclick="loginDiscord()">Se connecter avec Discord</button>
+      <span id="user-badge"></span>
+    </div>
+    <p id="vote-counter"></p>
+    <button id="settings-btn" onclick="toggleSettings()" onmousedown="event.stopPropagation()" style="margin-top:10px;pointer-events:all;">&#9881; réglages</button>
+  </div>
+  <div id="legend">
+    <div class="legend-row">
+      <span class="legend-label">taille = votes</span>
+      <div class="legend-size">
+        <span class="legend-word" style="font-size:10px">peu</span>
+        <span class="legend-word" style="font-size:14px">moyen</span>
+        <span class="legend-word" style="font-size:20px">beaucoup</span>
+      </div>
+    </div>
+    <div class="legend-row">
+      <span class="legend-label">couleur = rarété</span>
+      <div class="ramp">
+        <span class="ramp-dot" style="background:#6b6966"></span>
+        <span class="legend-label">commun</span>
+        <span class="ramp-dot" style="background:#7F77DD"></span>
+        <span class="legend-label">rare</span>
+      </div>
+    </div>
+  </div>
+  <div id="panel-wrap">
+    <div id="panel">
+      <button id="btn-close" onclick="closePanel()">fermer</button>
+      <span id="panel-cat-badge"></span>
+      <h2 id="panel-title"></h2>
+      <div id="panel-stats"></div>
+      <div id="level-bar-wrap">
+        <div class="level-label"><span>niveau moyen</span><span id="level-val"></span></div>
+        <div class="level-track"><div class="level-fill" id="level-fill" style="width:0%"></div></div>
+      </div>
+      <div id="votes-bar-wrap">
+        <div class="level-label"><span>souhaits d'atelier</span><span id="votes-val"></span></div>
+        <div class="votes-track"><div class="votes-fill" id="votes-fill" style="width:0%"></div></div>
+      </div>
+      <div id="panel-people"></div>
+      <button id="btn-vote" onclick="toggleVote()" disabled>
+        <span id="vote-btn-text">Ajouter à mes souhaits</span>
+        <span id="vote-btn-count" style="opacity:0.5"></span>
+      </button>
+      <p id="panel-login-hint">Connectez-vous avec Discord pour voter</p>
+    </div>
+  </div>
+  
   <div id="toast"></div>
 </div>
 
@@ -214,7 +215,6 @@ const TOTAL_PEOPLE     = 17;
 const MAX_VOTES        = 10;
 const SIZE_MIN         = 11;
 const SIZE_MAX         = 15;
-
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
 let skills       = [];
@@ -250,7 +250,6 @@ function resetSettings() {
 }
 
 function applySettings() {
-  velY             = cfg.vel * 0.0001;
   RADIUS_V         = cfg.rad / 100;
   CAT_SIZE_V       = cfg.cs;
   CAT_W_V          = cfg.cw;
@@ -504,25 +503,50 @@ async function refresh() {
   }, 300);
 }
 
-// ── Drag ──────────────────────────────────────────────────────
-stage.addEventListener('mousedown',  e => { dragging=true; wasDrag=false; lastX=e.clientX; lastY=e.clientY; stage.classList.add('dragging'); });
+// ── Rotation : vitesse constante, clic court = toggle stop/go ────────────
+let autoRotating = true;   // rotation automatique active
+let mouseDownTime = 0;     // pour détecter clic court vs maintenu
+const SHORT_CLICK_MS = 200;
+
+function targetVelY() { return (cfg.vel || 8) * 0.0001; }
+
+stage.addEventListener('mousedown', e => {
+  if (e.target.closest('#settings-panel')) return;
+  dragging=true; wasDrag=false; mouseDownTime=Date.now();
+  lastX=e.clientX; lastY=e.clientY; stage.classList.add('dragging');
+});
 window.addEventListener('mousemove', e => {
   if (!dragging) return;
   const dx=e.clientX-lastX, dy=e.clientY-lastY;
   if (Math.abs(dx)+Math.abs(dy)>3) wasDrag=true;
-  velY=dx*0.003; velX=dy*0.003; rotY+=dx*0.007; rotX+=dy*0.007;
+  rotY+=dx*0.007; rotX+=dy*0.007;
   lastX=e.clientX; lastY=e.clientY;
 });
-window.addEventListener('mouseup',   () => { dragging=false; stage.classList.remove('dragging'); });
-stage.addEventListener('touchstart', e => { dragging=true; wasDrag=false; lastX=e.touches[0].clientX; lastY=e.touches[0].clientY; }, {passive:true});
-stage.addEventListener('touchmove',  e => {
+window.addEventListener('mouseup', e => {
+  if (!dragging) return;
+  dragging=false; stage.classList.remove('dragging');
+  if (!wasDrag && (Date.now()-mouseDownTime) < SHORT_CLICK_MS) {
+    autoRotating = !autoRotating;
+  }
+});
+stage.addEventListener('touchstart', e => {
+  if (e.target.closest('#settings-panel')) return;
+  dragging=true; wasDrag=false; mouseDownTime=Date.now();
+  lastX=e.touches[0].clientX; lastY=e.touches[0].clientY;
+}, {passive:true});
+stage.addEventListener('touchmove', e => {
   if (!dragging) return;
   const dx=e.touches[0].clientX-lastX, dy=e.touches[0].clientY-lastY;
   if (Math.abs(dx)+Math.abs(dy)>3) wasDrag=true;
-  velY=dx*0.003; velX=dy*0.003; rotY+=dx*0.007; rotX+=dy*0.007;
+  rotY+=dx*0.007; rotX+=dy*0.007;
   lastX=e.touches[0].clientX; lastY=e.touches[0].clientY;
 }, {passive:true});
-stage.addEventListener('touchend', () => { dragging=false; });
+stage.addEventListener('touchend', () => {
+  if (!wasDrag && (Date.now()-mouseDownTime) < SHORT_CLICK_MS) {
+    autoRotating = !autoRotating;
+  }
+  dragging=false;
+});
 
 // ── Panneau ───────────────────────────────────────────────────
 function levelStars(n) { return '●'.repeat(n)+'○'.repeat(3-n); }
