@@ -23,9 +23,9 @@
 html, body { width: 100%; height: 100%; background: var(--bg); color: var(--text); font-family: var(--sans); overflow: hidden; }
 #stage { width: 100%; height: 100vh; position: relative; cursor: grab; user-select: none; overflow: hidden; }
 #stage.dragging { cursor: grabbing; }
-.word3d { position: absolute; transform-origin: center center; cursor: pointer; white-space: nowrap; font-family: var(--sans); font-weight: 500; letter-spacing: -0.01em; transition: opacity 0.12s; }
+.word3d { position: absolute; transform-origin: center center; cursor: pointer; font-family: var(--sans); font-weight: 500; letter-spacing: -0.01em; transition: opacity 0.12s; text-align: center; line-height: 1.25; white-space: normal; word-break: keep-all; overflow-wrap: normal; }
 .word3d:hover { opacity: 0.7 !important; }
-.cat-label { position: absolute; transform-origin: center center; white-space: nowrap; font-family: var(--mono); font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; pointer-events: none; }
+.cat-label { position: absolute; transform-origin: center center; font-family: var(--mono); font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; pointer-events: none; text-align: center; line-height: 1.3; white-space: normal; word-break: keep-all; overflow-wrap: normal; }
 #hud { position: absolute; top: 20px; left: 24px; display: flex; flex-direction: column; gap: 6px; pointer-events: none; z-index: 10; }
 #hud-title { font-size: 15px; font-weight: 700; color: var(--text); letter-spacing: 0.04em; }
 #hud-sub { font-size: 11px; color: var(--muted); font-family: var(--mono); }
@@ -70,6 +70,21 @@ html, body { width: 100%; height: 100%; background: var(--bg); color: var(--text
 #toast { position: absolute; bottom: 24px; left: 50%; transform: translateX(-50%); font-family: var(--mono); font-size: 12px; background: var(--surface); border: 0.5px solid var(--border); padding: 8px 16px; border-radius: 8px; opacity: 0; pointer-events: none; transition: opacity 0.2s; z-index: 100; }
 #toast.show { opacity: 1; }
 #loader { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: var(--bg); z-index: 50; font-family: var(--mono); font-size: 12px; color: var(--muted); }
+
+#settings-btn { position: absolute; bottom: 20px; right: 20px; z-index: 30; background: rgba(22,22,26,0.85); border: 0.5px solid rgba(255,255,255,0.12); color: rgba(255,255,255,0.5); font-family: var(--mono); font-size: 11px; padding: 6px 12px; border-radius: 6px; cursor: pointer; transition: all 0.15s; backdrop-filter: blur(4px); }
+#settings-btn:hover { color: var(--text); border-color: rgba(255,255,255,0.25); }
+#settings-panel { position: absolute; left: 0; top: 0; height: 100%; width: 200px; background: rgba(16,16,20,0.96); border-right: 0.5px solid rgba(255,255,255,0.07); z-index: 30; display: flex; flex-direction: column; padding: 16px 14px; gap: 0; transform: translateX(-100%); transition: transform 0.22s ease; backdrop-filter: blur(8px); overflow-y: auto; }
+#settings-panel.open { transform: translateX(0); }
+.sp-close { align-self: flex-end; background: transparent; border: none; color: rgba(255,255,255,0.3); font-size: 16px; cursor: pointer; padding: 0 0 12px 0; line-height: 1; }
+.sp-close:hover { color: var(--text); }
+.sp-group { margin-bottom: 18px; }
+.sp-group-title { font-family: var(--mono); font-size: 9px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(255,255,255,0.25); margin-bottom: 10px; padding-bottom: 6px; border-bottom: 0.5px solid rgba(255,255,255,0.06); }
+.sp-row { display: flex; flex-direction: column; gap: 3px; margin-bottom: 10px; }
+.sp-row:last-child { margin-bottom: 0; }
+.sp-row-head { display: flex; justify-content: space-between; align-items: baseline; }
+.sp-label { font-family: var(--mono); font-size: 11px; color: rgba(255,255,255,0.4); }
+.sp-val { font-family: var(--mono); font-size: 11px; color: rgba(255,255,255,0.75); font-weight: 500; min-width: 36px; text-align: right; }
+.sp-row input[type=range] { width: 100%; }
 </style>
 </head>
 <body>
@@ -125,20 +140,80 @@ html, body { width: 100%; height: 100%; background: var(--bg); color: var(--text
       <p id="panel-login-hint">Connectez-vous avec Discord pour voter</p>
     </div>
   </div>
+  
+  <button id="settings-btn" onclick="toggleSettings()">&#9881; réglages</button>
+  <div id="settings-panel">
+    <button class="sp-close" onclick="toggleSettings()">&#10005;</button>
+
+    <div class="sp-group">
+      <div class="sp-group-title">Général</div>
+      <div class="sp-row">
+        <div class="sp-row-head"><span class="sp-label">Vitesse</span><span class="sp-val" id="o-vel">8</span></div>
+        <input type="range" id="r-vel" min="0" max="20" value="8" step="1">
+      </div>
+      <div class="sp-row">
+        <div class="sp-row-head"><span class="sp-label">Sphère</span><span class="sp-val" id="o-rad">100%</span></div>
+        <input type="range" id="r-rad" min="60" max="140" value="100" step="5">
+      </div>
+    </div>
+
+    <div class="sp-group">
+      <div class="sp-group-title">Catégories</div>
+      <div class="sp-row">
+        <div class="sp-row-head"><span class="sp-label">Taille</span><span class="sp-val" id="o-cs">19px</span></div>
+        <input type="range" id="r-cs" min="10" max="32" value="19" step="1">
+      </div>
+      <div class="sp-row">
+        <div class="sp-row-head"><span class="sp-label">Largeur</span><span class="sp-val" id="o-cw">9.0×</span></div>
+        <input type="range" id="r-cw" min="4" max="14" value="9" step="0.5">
+      </div>
+      <div class="sp-row">
+        <div class="sp-row-head"><span class="sp-label">Opacité</span><span class="sp-val" id="o-co">18%</span></div>
+        <input type="range" id="r-co" min="5" max="35" value="18" step="1">
+      </div>
+      <div class="sp-row">
+        <div class="sp-row-head"><span class="sp-label">Dispersion</span><span class="sp-val" id="o-an">90%</span></div>
+        <input type="range" id="r-an" min="60" max="120" value="90" step="5">
+      </div>
+    </div>
+
+    <div class="sp-group">
+      <div class="sp-group-title">Compétences</div>
+      <div class="sp-row">
+        <div class="sp-row-head"><span class="sp-label">Taille</span><span class="sp-val" id="o-sm">15px</span></div>
+        <input type="range" id="r-sm" min="8" max="28" value="15" step="1">
+      </div>
+      <div class="sp-row">
+        <div class="sp-row-head"><span class="sp-label">Largeur</span><span class="sp-val" id="o-ww">7.5×</span></div>
+        <input type="range" id="r-ww" min="3" max="12" value="7.5" step="0.5">
+      </div>
+      <div class="sp-row">
+        <div class="sp-row-head"><span class="sp-label">Opacité</span><span class="sp-val" id="o-wo">75%</span></div>
+        <input type="range" id="r-wo" min="40" max="100" value="75" step="1">
+      </div>
+      <div class="sp-row">
+        <div class="sp-row-head"><span class="sp-label">Dispersion</span><span class="sp-val" id="o-sp">80%</span></div>
+        <input type="range" id="r-sp" min="40" max="120" value="80" step="5">
+      </div>
+    </div>
+
+    <button onclick="resetSettings()" style="font-family:var(--mono);font-size:10px;background:transparent;border:0.5px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.3);padding:5px;border-radius:5px;cursor:pointer;margin-top:auto;">réinitialiser</button>
+  </div>
+
   <div id="toast"></div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script>
-const SUPABASE_URL     = 'https://rhqcbghgekqforxhoeip.supabase.co';
-const SUPABASE_ANON    = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJocWNiZ2hnZWtxZm9yeGhvZWlwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU1ODAyNTAsImV4cCI6MjA5MTE1NjI1MH0.vjXf-taDKUQKCcMMC5j9riKYpzV96P4KWVGFJfgHd8g';
-const API_BASE         = 'https://bahut-ia4-skillcloud.netlify.app/';
-const DISCORD_CLIENT   = '1491168797485306022';
+const SUPABASE_URL     = 'VOTRE_SUPABASE_URL';
+const SUPABASE_ANON    = 'VOTRE_SUPABASE_ANON_KEY';
+const API_BASE         = 'VOTRE_NETLIFY_URL';
+const DISCORD_CLIENT   = 'VOTRE_DISCORD_CLIENT_ID';
 const DISCORD_REDIRECT = `${API_BASE}/.netlify/functions/discord-auth`;
 const TOTAL_PEOPLE     = 17;
 const MAX_VOTES        = 10;
-const SIZE_MIN         = 16;
-const SIZE_MAX         = 52;
+const SIZE_MIN         = 11;
+const SIZE_MAX         = 15;
 
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
@@ -150,10 +225,91 @@ let session      = null;
 let myVotes      = new Set();
 let currentSkill = null;
 let rotX = 0.3, rotY = 0.5;
-let velX = 0,   velY = 0.0025;
+let velX = 0,   velY = 0.0008;
 let dragging = false, wasDrag = false, lastX = 0, lastY = 0;
 const skillElems = [];
 const catElems   = [];   // labels de catégorie
+
+// ── Settings ───────────────────────────────────────────────────
+const DEFAULTS = { vel:8, rad:100, cs:19, cw:9, co:18, an:90, sm:15, ww:7.5, wo:75, sp:80 };
+let cfg = {};
+
+function loadSettings() {
+  try { cfg = JSON.parse(localStorage.getItem('sc_settings') || '{}'); } catch { cfg = {}; }
+  Object.keys(DEFAULTS).forEach(k => { if (cfg[k] === undefined) cfg[k] = DEFAULTS[k]; });
+  applySettings();
+}
+
+function saveSettings() { localStorage.setItem('sc_settings', JSON.stringify(cfg)); }
+
+function resetSettings() {
+  cfg = {...DEFAULTS};
+  saveSettings();
+  applySettings();
+  syncSliders();
+}
+
+function applySettings() {
+  velY             = cfg.vel * 0.0001;
+  RADIUS_V         = cfg.rad / 100;
+  CAT_SIZE_V       = cfg.cs;
+  CAT_W_V          = cfg.cw;
+  CAT_OP_V         = cfg.co / 100;
+  ANCHOR_R_V       = cfg.an / 100;
+  SIZE_MAX_V       = cfg.sm;
+  WORD_W_V         = cfg.ww;
+  WORD_OP_V        = cfg.wo / 100;
+  SPREAD_V         = cfg.sp / 100;
+  computeCatAnchors();
+  recomputeSkillPositions();
+}
+
+function syncSliders() {
+  const map = { vel:'o-vel', rad:'o-rad', cs:'o-cs', cw:'o-cw', co:'o-co', an:'o-an', sm:'o-sm', ww:'o-ww', wo:'o-wo', sp:'o-sp' };
+  Object.keys(DEFAULTS).forEach(k => {
+    const el = document.getElementById('r-'+k);
+    const out = document.getElementById('o-'+k);
+    if (el) el.value = cfg[k];
+    if (out) out.textContent = fmtVal(k, cfg[k]);
+  });
+}
+
+function fmtVal(k, v) {
+  if (k==='vel') return Math.round(v);
+  if (k==='rad'||k==='co'||k==='an'||k==='wo'||k==='sp') return Math.round(v)+'%';
+  if (k==='cs'||k==='sm') return Math.round(v)+'px';
+  if (k==='cw'||k==='ww') return parseFloat(v).toFixed(1)+'×';
+  return v;
+}
+
+function toggleSettings() {
+  document.getElementById('settings-panel').classList.toggle('open');
+}
+
+let RADIUS_V=1, CAT_SIZE_V=19, CAT_W_V=9, CAT_OP_V=0.18, ANCHOR_R_V=0.9;
+let SIZE_MAX_V=15, WORD_W_V=7.5, WORD_OP_V=0.75, SPREAD_V=0.8;
+
+function bindSettings() {
+  const pairs = [
+    ['r-vel','o-vel','vel'], ['r-rad','o-rad','rad'],
+    ['r-cs','o-cs','cs'],   ['r-cw','o-cw','cw'],
+    ['r-co','o-co','co'],   ['r-an','o-an','an'],
+    ['r-sm','o-sm','sm'],   ['r-ww','o-ww','ww'],
+    ['r-wo','o-wo','wo'],   ['r-sp','o-sp','sp'],
+  ];
+  pairs.forEach(([rid, oid, key]) => {
+    const el = document.getElementById(rid);
+    const out = document.getElementById(oid);
+    if (!el) return;
+    el.oninput = () => {
+      cfg[key] = parseFloat(el.value);
+      if (out) out.textContent = fmtVal(key, cfg[key]);
+      applySettings();
+      saveSettings();
+    };
+  });
+}
+
 
 // ── Couleur ────────────────────────────────────────────────────
 function hexToRgb(hex) {
@@ -168,11 +324,11 @@ function wordColor(skill) {
   return lerpColor('#6b6966', skill.color_hex || '#534AB7', rarity);
 }
 function wordSize(skill) {
+  const smax = SIZE_MAX_V || 15;
   const vt = (skill.votes_count||0) / maxVotes;
-  // Taille minimale proportionnelle aux porteurs (visible même sans vote)
   const pt = Math.min((skill.declarers_count||1) / TOTAL_PEOPLE, 1);
-  const base = SIZE_MIN + pt * 10;
-  return Math.round(base + vt * (SIZE_MAX - base));
+  const base = SIZE_MIN + pt * 4;
+  return Math.round(base + vt * (smax - base));
 }
 
 // ── Sphère + placement par pôle ────────────────────────────────
@@ -188,7 +344,7 @@ function computeCatAnchors() {
   categories.forEach((cat, i) => {
     const phi   = Math.acos(1 - 2*(i+0.5)/n);
     const theta = Math.PI * (1 + Math.sqrt(5)) * i;
-    catAnchors[cat.id] = spherePoint(phi, theta, 0.55);
+    catAnchors[cat.id] = spherePoint(phi, theta, ANCHOR_R_V || 0.9);
   });
 }
 
@@ -196,20 +352,24 @@ function computeCatAnchors() {
 // avec un bruit pseudo-aléatoire reproductible (basé sur l'index)
 function skillPosition(skill, idx) {
   const anchor = catAnchors[skill.category_id];
+  const R = RADIUS_V || 1.0;
+  const AR = ANCHOR_R_V || 0.9;
+  const SP = SPREAD_V || 0.8;
   if (!anchor) {
-    // Pas de catégorie → sphère extérieure aléatoire
     const phi   = Math.acos(1 - 2*(idx+0.5) / Math.max(skills.length,1));
     const theta = Math.PI * (1 + Math.sqrt(5)) * idx;
-    return spherePoint(phi, theta, 0.82);
+    return spherePoint(phi, theta, R);
   }
-  // Bruit autour de l'ancre : décalage angulaire limité
-  const spread = 0.38;
   const seed   = idx * 2.399963;
-  const dPhi   = (((seed * 7.3) % 1) - 0.5) * spread;
-  const dTheta = (((seed * 3.7) % 1) - 0.5) * spread * 2;
-  const phi    = Math.acos(Math.max(-1, Math.min(1, anchor.z / 0.55))) + dPhi;
+  const dPhi   = (((seed * 7.3) % 1) - 0.5) * SP;
+  const dTheta = (((seed * 3.7) % 1) - 0.5) * SP * 2;
+  const phi    = Math.acos(Math.max(-1, Math.min(1, anchor.z / AR))) + dPhi;
   const theta  = Math.atan2(anchor.y, anchor.x) + dTheta;
-  return spherePoint(phi, theta, 0.78 + (((seed * 5.1) % 1) - 0.5) * 0.12);
+  return spherePoint(phi, theta, R + (((seed * 5.1) % 1) - 0.5) * 0.06);
+}
+
+function recomputeSkillPositions() {
+  skills.forEach((s, i) => { s._pos = skillPosition(s, i); });
 }
 
 // ── Rendu 3D ──────────────────────────────────────────────────
@@ -234,9 +394,11 @@ function render() {
     const r = rot(pos);
     const sc = fov / (fov - r.z * 0.6);
     const depth = (r.z + 1) / 2;
-    el.style.fontSize      = wordSize(skills[i]) + 'px';
+    const fs = wordSize(skills[i]);
+    el.style.fontSize      = fs + 'px';
+    el.style.maxWidth      = Math.round(fs * (WORD_W_V||7.5)) + 'px';
     el.style.color         = wordColor(skills[i]);
-    el.style.opacity       = (0.45 + depth * 0.55).toFixed(2);
+    el.style.opacity       = Math.min(WORD_OP_V||0.75, 0.4+depth*0.6).toFixed(2);
     el.style.left          = Math.round(W/2 + r.x * W * 0.4 * sc) + 'px';
     el.style.top           = Math.round(H/2 + r.y * H * 0.42 * sc) + 'px';
     el.style.transform     = `translate(-50%,-50%) scale(${(0.65+depth*0.35).toFixed(2)})`;
@@ -252,11 +414,15 @@ function render() {
     const r = rot(anchor);
     const sc = fov / (fov - r.z * 0.6);
     const depth = (r.z + 1) / 2;
+    const cfs = CAT_SIZE_V || 19;
+    el.style.fontSize  = cfs + 'px';
+    el.style.maxWidth  = Math.round(cfs * (CAT_W_V||9)) + 'px';
     el.style.left      = Math.round(W/2 + r.x * W * 0.4 * sc) + 'px';
     el.style.top       = Math.round(H/2 + r.y * H * 0.42 * sc) + 'px';
     el.style.transform = `translate(-50%,-50%) scale(${(0.6+depth*0.4).toFixed(2)})`;
     el.style.zIndex    = Math.round(depth * 100) + 1;
-    el.style.opacity   = (0.35 + depth * 0.45).toFixed(2);
+    const cop = CAT_OP_V || 0.18;
+    el.style.opacity   = (cop*0.3+depth*cop*0.7).toFixed(2);
   });
 }
 
@@ -278,9 +444,7 @@ function buildWords() {
     const el = document.createElement('div');
     el.className   = 'cat-label';
     el.textContent = cat.name;
-    el.style.fontSize = '11px';
-    el.style.color    = cat.color_hex || '#888780';
-    el.style.letterSpacing = '0.12em';
+    el.style.color = cat.color_hex || '#888780';
     stage.appendChild(el);
     catElems.push(el);
   });
@@ -456,7 +620,7 @@ const params=new URLSearchParams(location.search);
 if (params.get('auth')==='success') { history.replaceState({},'',location.pathname); toast('Connecté avec Discord ✓'); }
 else if (params.get('auth')==='cancelled') { history.replaceState({},'',location.pathname); }
 
-(async()=>{ await loadData(); subscribeRealtime(); await checkSession(); loop(); })();
+(async()=>{ loadSettings(); bindSettings(); syncSliders(); await loadData(); subscribeRealtime(); await checkSession(); loop(); })();
 </script>
 </body>
 </html>
