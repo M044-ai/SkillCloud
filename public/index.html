@@ -262,7 +262,7 @@ html, body { width: 100%; height: 100%; background: var(--bg); color: var(--text
 <script>
 const SUPABASE_URL     = 'https://rhqcbghgekqforxhoeip.supabase.co';
 const SUPABASE_ANON    = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJocWNiZ2hnZWtxZm9yeGhvZWlwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU1ODAyNTAsImV4cCI6MjA5MTE1NjI1MH0.vjXf-taDKUQKCcMMC5j9riKYpzV96P4KWVGFJfgHd8g';
-const API_BASE         = 'https://bahut-ia4-skillcloud.netlify.app/';
+const API_BASE         = 'https://bahut-ia4-skillcloud.netlify.app';
 const DISCORD_CLIENT   = '1491168797485306022';
 const DISCORD_REDIRECT = `${API_BASE}/.netlify/functions/discord-auth`;
 const TOTAL_PEOPLE     = 17;
@@ -836,7 +836,7 @@ function renderDemands() {
   const container = document.getElementById('dem-list');
   const sorted = [...demandsCache].sort((a, b) => demandScore(b) - demandScore(a));
   if (!sorted.length) {
-    container.innerHTML = '<p style="font-family:var(--mono);font-size:11px;color:rgba(255,255,255,0.25)">Aucune demande pour l'instant</p>';
+    container.innerHTML = '<p style="font-family:var(--mono);font-size:11px;color:rgba(255,255,255,0.25)">Aucune demande pour l\'instant</p>';
     return;
   }
 
@@ -844,8 +844,6 @@ function renderDemands() {
     const score = demandScore(d);
     const supporters = (d.supporters || []).join(', ');
     const isSatisfaite = d.status === 'satisfaite';
-    const formUrl = `VOTRE_NETLIFY_URL/form.html`;
-
     return `<div class="dem-item${isSatisfaite ? ' satisfaite' : ''}" data-id="${d.id}">
       <div class="dem-skill-name">${d.skill_name}</div>
       ${d.description ? `<div class="dem-desc">${d.description}</div>` : ''}
@@ -914,9 +912,9 @@ async function submitSupport(id) {
 }
 
 function respondDemand(skillName) {
-  const url = `VOTRE_NETLIFY_URL/form.html`;
+  const url = 'https://bahut-ia4-skillcloud.netlify.app/form.html';
   window.open(url, '_blank');
-  toast('Le formulaire s'ouvre — pensez à saisir "' + skillName + '"');
+  toast('Formulaire ouvert — saisir : ' + skillName);
 }
 
 (async()=>{ loadSettings(); bindSettings(); syncSliders(); await loadData(); subscribeRealtime(); await checkSession(); loop(); })();
