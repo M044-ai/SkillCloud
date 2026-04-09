@@ -560,16 +560,32 @@ async function loadData() {
 }
 
 function subscribeRealtime() {
-  sb.channel('skillcloud')
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'declarations' }, refresh)
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'votes' },        refresh)
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'categories' },   refresh)
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'demands' }, () => { if (document.getElementById('demands-panel').classList.contains('open')) loadDemands(); })
+  // Canal déclarations : peut ajouter de nouvelles compétences/catégories
+  sb.channel('sc-declarations')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'declarations' }, refreshFull)
+    .subscribe();
+
+  // Canal votes : ne change que les votes_count, pas la structure
+  sb.channel('sc-votes')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'votes' }, refreshVotes)
+    .subscribe();
+
+  // Canal catégories : rare, rebuild complet
+  sb.channel('sc-categories')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'categories' }, refreshFull)
+    .subscribe();
+
+  // Canal demandes : uniquement si panneau ouvert
+  sb.channel('sc-demands')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'demands' }, () => {
+      if (document.getElementById('demands-panel').classList.contains('open')) loadDemands();
+    })
     .subscribe();
 }
 
+// ── refreshFull : nouveau skill ou catégorie — rebuild si structure change ──
 let refreshTimer = null;
-async function refresh() {
+async function refreshFull() {
   clearTimeout(refreshTimer);
   refreshTimer = setTimeout(async () => {
     const [catRes, skillRes] = await Promise.all([
@@ -581,15 +597,59 @@ async function refresh() {
     categories = catRes.data  || [];
     skills     = skillRes.data || [];
     maxVotes   = Math.max(1, ...skills.map(s => s.votes_count || 0));
-    if (categories.length !== prevCatLen || skills.length !== prevSkillLen) buildWords();
+    // Rebuild DOM seulement si le nombre de skills/catégories a changé
+    if (categories.length !== prevCatLen || skills.length !== prevSkillLen) {
+      buildWords();
+    }
+    // Mettre à jour les données du panneau ouvert si concerné
     if (currentSkill) {
       const updated = skills.find(s => s.id === currentSkill.id);
       if (updated) { currentSkill = updated; refreshPanel(); }
     }
     updateVoteCounter();
-    if (document.getElementById("wishes-panel").classList.contains("open")) buildWishesList();
+    if (document.getElementById('wishes-panel').classList.contains('open')) buildWishesList();
   }, 300);
 }
+
+// ── refreshVotes : seuls les votes_count changent — pas de rebuild DOM ──────
+let voteTimer = null;
+async function refreshVotes() {
+  clearTimeout(voteTimer);
+  voteTimer = setTimeout(async () => {
+    // Recharger uniquement les votes depuis la vue (champs légers)
+    const { data } = await sb
+      .from('skill_cloud_view')
+      .select('id, votes_count');
+    if (!data) return;
+
+    let maxChanged = false;
+    const prevMax = maxVotes;
+
+    data.forEach(row => {
+      const s = skills.find(x => x.id === row.id);
+      if (s && s.votes_count !== row.votes_count) {
+        s.votes_count = row.votes_count;
+      }
+    });
+
+    const newMax = Math.max(1, ...skills.map(s => s.votes_count || 0));
+    if (newMax !== prevMax) {
+      maxVotes = newMax;
+      maxChanged = true;
+    }
+
+    // Mettre à jour le panneau si la compétence affichée a changé
+    if (currentSkill) {
+      const updated = skills.find(s => s.id === currentSkill.id);
+      if (updated) { currentSkill = updated; refreshPanel(); }
+    }
+    updateVoteCounter();
+    if (document.getElementById('wishes-panel').classList.contains('open')) buildWishesList();
+  }, 300);
+}
+
+// Alias pour compatibilité (utilisé nulle part mais au cas où)
+const refresh = refreshFull;
 
 // ── Rotation : vitesse constante, clic court = toggle stop/go ────────────
 let autoRotating = true;   // rotation automatique active
@@ -743,19 +803,22 @@ function loginDiscord() {
   window.location.href=`https://discord.com/api/oauth2/authorize?client_id=${DISCORD_CLIENT}&redirect_uri=${encodeURIComponent(DISCORD_REDIRECT)}&response_type=code&scope=identify`;
 }
 async function checkSession() {
+  // Lecture du cookie uniquement — zéro appel réseau au chargement
   try {
-    const res=await fetch(`${API_BASE}/.netlify/functions/vote`,{method:'GET',credentials:'include'});
-    if (!res.ok) return;
-    const data=await res.json();
-    const match=document.cookie.match(/sc_session=([^;]+)/);
-    if (match) {
-      const payload=JSON.parse(atob(match[1].split('.')[0]));
-      session=payload; myVotes=new Set(data.voted_skill_ids||[]);
-      document.getElementById('btn-login').style.display='none';
-      document.getElementById('user-badge').style.display='inline';
-      document.getElementById('user-badge').textContent=`@${payload.discord_username}`;
-      updateVoteCounter();
-    }
+    const match = document.cookie.match(/sc_session=([^;]+)/);
+    if (!match) return;
+    const payload = JSON.parse(atob(match[1].split('.')[0]));
+    if (!payload || payload.exp < Date.now()) return;
+    session = payload;
+    // Charger les votes depuis Supabase directement (pas via Netlify Function)
+    const { data } = await sb.from('votes')
+      .select('skill_id')
+      .eq('discord_user_id', payload.discord_id);
+    myVotes = new Set((data||[]).map(v => v.skill_id));
+    document.getElementById('btn-login').style.display='none';
+    document.getElementById('user-badge').style.display='inline';
+    document.getElementById('user-badge').textContent=`@${payload.discord_username}`;
+    updateVoteCounter();
   } catch {}
 }
 
