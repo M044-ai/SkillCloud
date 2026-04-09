@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Le Bahut IA4 · SkillCloud — Mode d'emploi</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0d0d0f; --surface: #16161a; --surface2: #1e1e24;
+  --border: rgba(255,255,255,0.08); --text: #e8e6df; --muted: #6b6966;
+  --c1: #7F77DD; --c2: #5DCAA5; --c3: #D85A30; --c4: #EF9F27;
+  --c5: #ED93B1; --c6: #378ADD; --c7: #97C459; --c8: #D4537E; --c9: #1D9E75;
+  --sans: 'Syne', sans-serif; --mono: 'DM Mono', monospace;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--text); font-family: var(--sans); min-height: 100vh; }
+
+/* Layout */
+.shell { display: flex; height: 100vh; overflow: hidden; }
+.sidebar { width: 220px; flex-shrink: 0; background: var(--surface); border-right: 0.5px solid var(--border); display: flex; flex-direction: column; padding: 24px 0; }
+.sidebar-title { font-size: 13px; font-weight: 700; letter-spacing: 0.04em; padding: 0 20px 20px; border-bottom: 0.5px solid var(--border); }
+.sidebar-title span { display: block; font-size: 10px; font-family: var(--mono); color: var(--muted); font-weight: 400; margin-top: 3px; }
+nav { padding: 12px 0; flex: 1; }
+.nav-item { display: flex; align-items: center; gap: 10px; padding: 9px 20px; cursor: pointer; font-size: 13px; color: var(--muted); transition: all 0.12s; border-left: 2px solid transparent; }
+.nav-item:hover { color: var(--text); background: rgba(255,255,255,0.03); }
+.nav-item.active { color: var(--text); border-left-color: var(--c1); background: rgba(127,119,221,0.08); }
+.nav-icon { font-size: 15px; width: 20px; text-align: center; }
+.content { flex: 1; overflow-y: auto; padding: 36px 40px; }
+
+/* Sections */
+.section { display: none; max-width: 580px; }
+.section.active { display: block; }
+.section-title { font-size: 22px; font-weight: 700; margin-bottom: 6px; }
+.section-sub { font-size: 13px; color: var(--muted); font-family: var(--mono); margin-bottom: 28px; }
+
+/* Steps */
+.step { display: flex; gap: 16px; margin-bottom: 20px; }
+.step-dot { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; flex-shrink: 0; margin-top: 2px; }
+.step-body { flex: 1; padding-top: 5px; }
+.step-body h3 { font-size: 14px; font-weight: 700; margin-bottom: 5px; }
+.step-body p { font-size: 13px; color: rgba(255,255,255,0.6); line-height: 1.6; }
+
+/* Cards inline */
+.cards { display: flex; flex-direction: column; gap: 10px; margin: 16px 0; }
+.card { background: var(--surface2); border: 0.5px solid var(--border); border-radius: 10px; padding: 14px 16px; }
+.card-head { font-size: 12px; font-weight: 700; margin-bottom: 4px; display: flex; align-items: center; gap: 8px; }
+.card p { font-size: 12px; color: rgba(255,255,255,0.5); line-height: 1.6; font-family: var(--mono); }
+.dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+/* Tip */
+.tip { background: rgba(127,119,221,0.08); border: 0.5px solid rgba(127,119,221,0.2); border-radius: 8px; padding: 10px 14px; font-size: 12px; color: rgba(255,255,255,0.55); font-family: var(--mono); line-height: 1.6; margin: 16px 0; }
+.tip strong { color: var(--c1); }
+
+/* Keyboard */
+kbd { font-family: var(--mono); font-size: 11px; background: var(--surface2); border: 0.5px solid rgba(255,255,255,0.15); border-radius: 4px; padding: 2px 7px; color: var(--text); }
+
+/* Mini nuage demo */
+#demo-cloud { position: relative; width: 100%; height: 180px; background: var(--surface2); border: 0.5px solid var(--border); border-radius: 12px; overflow: hidden; margin: 16px 0; cursor: grab; user-select: none; }
+.demo-word { position: absolute; transform: translate(-50%,-50%); font-family: var(--sans); font-weight: 500; cursor: pointer; transition: opacity 0.15s; white-space: nowrap; }
+.demo-word:hover { opacity: 0.6 !important; }
+.demo-cat { position: absolute; transform: translate(-50%,-50%); font-family: var(--mono); font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; opacity: 0.2; white-space: nowrap; pointer-events: none; }
+
+/* Légende couleurs */
+.legend-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 12px 0; }
+.legend-item { display: flex; align-items: center; gap: 8px; font-size: 12px; color: rgba(255,255,255,0.55); }
+.legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+
+/* Niveau pills */
+.levels { display: flex; gap: 8px; margin: 10px 0; flex-wrap: wrap; }
+.lvl { font-family: var(--mono); font-size: 11px; padding: 4px 10px; border-radius: 20px; }
+.lvl-1 { background: rgba(133,183,235,0.12); color: #85B7EB; border: 0.5px solid rgba(133,183,235,0.2); }
+.lvl-2 { background: rgba(239,159,39,0.12); color: #EF9F27; border: 0.5px solid rgba(239,159,39,0.2); }
+.lvl-3 { background: rgba(93,202,165,0.12); color: #5DCAA5; border: 0.5px solid rgba(93,202,165,0.2); }
+
+/* Progress indicator */
+.progress { display: flex; gap: 6px; margin-bottom: 28px; }
+.prog-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--border); transition: background 0.2s; }
+.prog-dot.active { background: var(--c1); }
+
+/* Mobile nav */
+@media (max-width: 600px) {
+  .sidebar { width: 60px; }
+  .sidebar-title, .nav-item span { display: none; }
+  .nav-item { justify-content: center; padding: 12px; }
+  .content { padding: 24px 20px; }
+}
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <div class="sidebar">
+    <div class="sidebar-title">
+      Le Bahut IA4
+      <span>SkillCloud · Mode d'emploi</span>
+    </div>
+    <nav>
+      <div class="nav-item active" onclick="show(0)"><span class="nav-icon">👀</span><span>C'est quoi ?</span></div>
+      <div class="nav-item" onclick="show(1)"><span class="nav-icon">📝</span><span>Déclarer mes compétences</span></div>
+      <div class="nav-item" onclick="show(2)"><span class="nav-icon">🌐</span><span>Explorer le nuage</span></div>
+      <div class="nav-item" onclick="show(3)"><span class="nav-icon">⭐</span><span>Voter pour un atelier</span></div>
+      <div class="nav-item" onclick="show(4)"><span class="nav-icon">💬</span><span>Demander une compétence</span></div>
+    </nav>
+  </div>
+
+  <div class="content">
+
+    <!-- 0 — C'EST QUOI -->
+    <div class="section active" id="s0">
+      <div class="section-title">C'est quoi SkillCloud ?</div>
+      <div class="section-sub">Une carte des compétences de la promo, construite par vous.</div>
+
+      <div class="cards">
+        <div class="card">
+          <div class="card-head"><div class="dot" style="background:var(--c2)"></div>Voir qui sait quoi</div>
+          <p>Chaque compétence déclarée apparaît dans le nuage 3D. Plus elle est rare dans la promo, plus elle est colorée. Plus elle suscite d'intérêt, plus elle est grande.</p>
+        </div>
+        <div class="card">
+          <div class="card-head"><div class="dot" style="background:var(--c4)"></div>Organiser les ateliers entre pairs</div>
+          <p>Vous votez pour les compétences sur lesquelles vous voulez progresser. Les plus demandées deviennent des ateliers animés par ceux qui les maîtrisent.</p>
+        </div>
+        <div class="card">
+          <div class="card-head"><div class="dot" style="background:var(--c5)"></div>Signaler ce qui manque</div>
+          <p>Une compétence n'est pas encore dans le nuage ? Vous pouvez la demander. Si quelqu'un dans la promo la possède, il peut y répondre via le formulaire.</p>
+        </div>
+      </div>
+
+      <div class="tip">
+        <strong>Deux liens à retenir :</strong><br>
+        🔗 <a href="https://bahut-ia4-skillcloud.netlify.app/form.html" target="_blank" style="color:inherit"><strong>Formulaire</strong></a> — pour déclarer vos compétences<br>
+        🌐 <a href="https://bahut-ia4-skillcloud.netlify.app/" target="_blank" style="color:inherit"><strong>Nuage</strong></a> — pour explorer, voter, demander
+      </div>
+    </div>
+
+    <!-- 1 — DÉCLARER -->
+    <div class="section" id="s1">
+      <div class="section-title">Déclarer mes compétences</div>
+      <div class="section-sub">Via le formulaire — ça prend 3 minutes.</div>
+
+      <div class="step">
+        <div class="step-dot" style="background:rgba(127,119,221,0.15);color:var(--c1)">1</div>
+        <div class="step-body">
+          <h3>Ouvrir le formulaire</h3>
+          <p>Cliquer sur le lien formulaire partagé dans Discord. Il s'ouvre dans votre navigateur, aucune installation nécessaire.</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-dot" style="background:rgba(239,159,39,0.15);color:var(--c4)">2</div>
+        <div class="step-body">
+          <h3>Saisir votre prénom</h3>
+          <p>Juste votre prénom — c'est ce qui apparaîtra dans les fiches compétences du nuage. Utilisez toujours le même prénom si vous revenez.</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-dot" style="background:rgba(93,202,165,0.15);color:var(--c2)">3</div>
+        <div class="step-body">
+          <h3>Remplir jusqu'à 5 compétences</h3>
+          <p>Pour chaque compétence : choisissez une catégorie, saisissez le nom (les compétences déjà existantes s'autocomplètent), puis choisissez votre niveau.</p>
+          <div class="levels">
+            <span class="lvl lvl-1">● Découverte — notions</span>
+            <span class="lvl lvl-2">●● Pratique — expérience</span>
+            <span class="lvl lvl-3">●●● Expert — peut animer</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-dot" style="background:rgba(237,147,177,0.15);color:var(--c5)">4</div>
+        <div class="step-body">
+          <h3>Enregistrer</h3>
+          <p>Cliquer sur "Enregistrer mes compétences". Elles apparaissent dans le nuage en quelques secondes, en temps réel pour tout le monde.</p>
+        </div>
+      </div>
+
+      <div class="tip">
+        <strong>Vous pouvez revenir plusieurs fois.</strong> Pas de limite — si vous avez oublié une compétence ou changé d'avis sur votre niveau, resoumettez. Les déclarations s'accumulent par prénom.
+      </div>
+    </div>
+
+    <!-- 2 — EXPLORER -->
+    <div class="section" id="s2">
+      <div class="section-title">Explorer le nuage</div>
+      <div class="section-sub">Un globe 3D interactif — tout se contrôle à la souris.</div>
+
+      <div id="demo-cloud"></div>
+
+      <div class="cards">
+        <div class="card">
+          <div class="card-head">🖱️ Naviguer dans le nuage</div>
+          <p>
+            <kbd>Glisser</kbd> pour faire tourner le globe<br>
+            <kbd>Clic court</kbd> sur fond vide → pause / reprise de la rotation<br>
+            <kbd>Clic sur une catégorie</kbd> → centrer la vue sur ce pôle<br>
+            <kbd>Clic sur un mot</kbd> → ouvrir la fiche compétence
+          </p>
+        </div>
+        <div class="card">
+          <div class="card-head">🎨 Lire le nuage</div>
+          <div class="legend-grid">
+            <div class="legend-item"><div class="legend-dot" style="background:#6b6966"></div>Compétence commune</div>
+            <div class="legend-item"><div class="legend-dot" style="background:var(--c1)"></div>Compétence rare</div>
+            <div class="legend-item" style="font-size:11px;color:rgba(255,255,255,0.35)">mot petit</div>
+            <div class="legend-item" style="font-size:11px;color:rgba(255,255,255,0.35)">→ peu de votes</div>
+            <div class="legend-item" style="font-size:14px;font-weight:700;color:rgba(255,255,255,0.6)">MOT GRAND</div>
+            <div class="legend-item" style="font-size:11px;color:rgba(255,255,255,0.35)">→ très demandé</div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-head">🎛️ Personnaliser l'affichage</div>
+          <p>Le bouton <kbd>⚙ réglages</kbd> (bas gauche) ouvre un panneau avec des curseurs pour ajuster tailles, opacité et dispersion. Vos réglages sont sauvegardés.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3 — VOTER -->
+    <div class="section" id="s3">
+      <div class="section-title">Voter pour un atelier</div>
+      <div class="section-sub">Dites sur quoi vous voulez progresser — les plus votés deviennent des ateliers.</div>
+
+      <div class="step">
+        <div class="step-dot" style="background:rgba(93,202,165,0.15);color:var(--c2)">1</div>
+        <div class="step-body">
+          <h3>Se connecter avec Discord</h3>
+          <p>Cliquer sur "Se connecter avec Discord" en haut à gauche du nuage. C'est nécessaire pour voter — ça garantit qu'on ne vote qu'une fois par compétence.</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-dot" style="background:rgba(239,159,39,0.15);color:var(--c4)">2</div>
+        <div class="step-body">
+          <h3>Cliquer sur une compétence</h3>
+          <p>La fiche s'ouvre à droite — elle affiche les porteurs, leur niveau, et le nombre de souhaits déjà exprimés.</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-dot" style="background:rgba(127,119,221,0.15);color:var(--c1)">3</div>
+        <div class="step-body">
+          <h3>Ajouter à mes souhaits</h3>
+          <p>Cliquer sur "Ajouter à mes souhaits" dans la fiche. Vous pouvez voter pour <strong>10 compétences maximum</strong>. Vous pouvez aussi retirer un vote.</p>
+        </div>
+      </div>
+
+      <div class="tip">
+        <strong>Panneau ★ Souhaits</strong> (bouton bas droite) — liste toutes les compétences classées par nombre de votes, avec les porteurs et leurs niveaux. Pratique pour voir les sujets les plus demandés d'un coup d'œil.
+      </div>
+    </div>
+
+    <!-- 4 — DEMANDER -->
+    <div class="section" id="s4">
+      <div class="section-title">Demander une compétence</div>
+      <div class="section-sub">Une compétence manque dans le nuage ? Signalez-la.</div>
+
+      <div class="step">
+        <div class="step-dot" style="background:rgba(212,83,126,0.15);color:var(--c8)">1</div>
+        <div class="step-body">
+          <h3>Ouvrir le panneau Demandes</h3>
+          <p>Cliquer sur le bouton <kbd>● demandes</kbd> en bas à droite du nuage. Le panneau s'ouvre sur le côté.</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-dot" style="background:rgba(239,159,39,0.15);color:var(--c4)">2</div>
+        <div class="step-body">
+          <h3>Formuler la demande</h3>
+          <p>Saisir le nom de la compétence souhaitée, une description courte (facultatif), et votre prénom. Pas besoin de choisir une catégorie — c'est le sachant qui le fera quand il répondra.</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-dot" style="background:rgba(93,202,165,0.15);color:var(--c2)">3</div>
+        <div class="step-body">
+          <h3>Soutenir une demande existante</h3>
+          <p>Si quelqu'un a déjà formulé une demande qui vous intéresse aussi, cliquez <kbd>+ Je suis intéressé·e</kbd> et saisissez votre prénom. Les demandes sont classées par nombre d'intéressés.</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-dot" style="background:rgba(127,119,221,0.15);color:var(--c1)">4</div>
+        <div class="step-body">
+          <h3>Répondre à une demande</h3>
+          <p>Vous possédez la compétence demandée ? Cliquer sur <kbd>Je peux apporter cette compétence →</kbd>. Le formulaire s'ouvre — saisissez la compétence et votre niveau. Une fois déclarée, la demande est automatiquement marquée comme satisfaite.</p>
+        </div>
+      </div>
+
+      <div class="tip">
+        <strong>Demande satisfaite</strong> — quand la compétence est déclarée dans le nuage, la demande affiche <em>"✓ Compétence disponible — voir dans le nuage →"</em>. Cliquer dessus centre la vue sur la compétence.
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const navItems = document.querySelectorAll('.nav-item');
+const sections = document.querySelectorAll('.section');
+
+function show(i) {
+  navItems.forEach((n,j) => n.classList.toggle('active', i===j));
+  sections.forEach((s,j) => s.classList.toggle('active', i===j));
+}
+
+// Mini démo nuage
+const words = [
+  {t:'Prompt engineering', x:52, y:38, fs:14, op:0.85, c:'#7F77DD'},
+  {t:'LangChain',          x:38, y:55, fs:11, op:0.6,  c:'#7F77DD'},
+  {t:'Python',             x:68, y:62, fs:13, op:0.75, c:'#D85A30'},
+  {t:'Power BI',           x:25, y:35, fs:12, op:0.65, c:'#5DCAA5'},
+  {t:'Gestion projet',     x:72, y:30, fs:15, op:0.9,  c:'#EF9F27'},
+  {t:'Design thinking',    x:45, y:75, fs:12, op:0.6,  c:'#ED93B1'},
+  {t:'Anglais',            x:18, y:65, fs:11, op:0.55, c:'#1D9E75'},
+  {t:'Tests logiciels',    x:62, y:78, fs:10, op:0.5,  c:'#97C459'},
+  {t:'Make / Zapier',      x:82, y:52, fs:11, op:0.6,  c:'#D4537E'},
+];
+const cats = [
+  {t:'Ingénierie IA', x:50, y:30},
+  {t:'Data & Analytics', x:22, y:42},
+  {t:'Pilotage', x:75, y:22},
+  {t:'Langues', x:15, y:72},
+];
+const cloud = document.getElementById('demo-cloud');
+cats.forEach(w => {
+  const el = document.createElement('div');
+  el.className = 'demo-cat';
+  el.textContent = w.t;
+  el.style.cssText = `left:${w.x}%;top:${w.y}%;color:#e8e6df`;
+  cloud.appendChild(el);
+});
+words.forEach(w => {
+  const el = document.createElement('div');
+  el.className = 'demo-word';
+  el.textContent = w.t;
+  el.style.cssText = `left:${w.x}%;top:${w.y}%;font-size:${w.fs}px;opacity:${w.op};color:${w.c}`;
+  el.title = 'Cliquer = ouvrir la fiche';
+  el.addEventListener('mouseenter', () => el.style.opacity = '0.5');
+  el.addEventListener('mouseleave', () => el.style.opacity = w.op);
+  cloud.appendChild(el);
+});
+</script>
+</body>
+</html>
