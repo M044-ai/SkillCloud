@@ -103,6 +103,41 @@ html, body { width: 100%; height: 100%; background: var(--bg); color: var(--text
 .wish-panel-title { font-family: var(--mono); font-size: 9px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(255,255,255,0.25); margin-bottom: 12px; padding-bottom: 6px; border-bottom: 0.5px solid rgba(255,255,255,0.06); user-select: none; }
 #wishes-close { align-self: flex-end; background: transparent; border: none; color: rgba(255,255,255,0.3); font-size: 16px; cursor: pointer; padding: 0 0 12px 0; line-height: 1; }
 #wishes-close:hover { color: var(--text); }
+
+/* ── Panneau Demandes ── */
+#demands-panel { position: relative; height: 100%; width: 0; flex-shrink: 0; background: rgba(16,16,20,0.98); border-left: 0.5px solid rgba(255,255,255,0.07); z-index: 30; display: flex; flex-direction: column; overflow: hidden; transition: width 0.22s ease; }
+#demands-panel.open { width: 260px; overflow-y: auto; }
+#demands-inner { padding: 16px 14px; display: flex; flex-direction: column; min-height: 100%; }
+#btn-demands { position: absolute; bottom: 140px; right: 24px; z-index: 30; background: rgba(22,22,26,0.85); border: 0.5px solid rgba(255,255,255,0.12); color: rgba(255,255,255,0.5); font-family: var(--mono); font-size: 11px; padding: 6px 12px; border-radius: 6px; cursor: pointer; transition: all 0.15s; }
+#btn-demands:hover { color: var(--text); border-color: rgba(255,255,255,0.25); }
+.dem-panel-title { font-family: var(--mono); font-size: 9px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(255,255,255,0.25); margin-bottom: 12px; padding-bottom: 6px; border-bottom: 0.5px solid rgba(255,255,255,0.06); user-select: none; }
+/* Formulaire nouvelle demande */
+#dem-form { background: rgba(255,255,255,0.03); border: 0.5px solid rgba(255,255,255,0.07); border-radius: 8px; padding: 10px; margin-bottom: 14px; }
+#dem-form input, #dem-form textarea { width: 100%; background: rgba(255,255,255,0.05); border: 0.5px solid rgba(255,255,255,0.1); border-radius: 5px; color: var(--text); font-family: var(--mono); font-size: 11px; padding: 6px 8px; margin-bottom: 6px; outline: none; resize: none; }
+#dem-form input::placeholder, #dem-form textarea::placeholder { color: rgba(255,255,255,0.25); }
+#dem-form input:focus, #dem-form textarea:focus { border-color: rgba(255,255,255,0.25); }
+#dem-submit { width: 100%; font-family: var(--mono); font-size: 11px; padding: 7px; background: rgba(83,74,183,0.2); border: 0.5px solid rgba(83,74,183,0.4); color: #AFA9EC; border-radius: 5px; cursor: pointer; transition: all 0.15s; }
+#dem-submit:hover { background: rgba(83,74,183,0.35); }
+/* Liste demandes */
+.dem-item { padding: 10px 0; border-bottom: 0.5px solid rgba(255,255,255,0.06); }
+.dem-item:last-child { border-bottom: none; }
+.dem-item.satisfaite .dem-skill-name { opacity: 0.5; text-decoration: line-through; }
+.dem-skill-name { font-size: 13px; font-weight: 500; color: var(--text); margin-bottom: 3px; line-height: 1.3; font-family: var(--sans); }
+.dem-desc { font-family: var(--mono); font-size: 10px; color: rgba(255,255,255,0.4); margin-bottom: 5px; line-height: 1.4; }
+.dem-meta { font-family: var(--mono); font-size: 10px; color: rgba(255,255,255,0.35); margin-bottom: 6px; }
+.dem-status-ok { font-family: var(--mono); font-size: 10px; color: #5DCAA5; margin-bottom: 5px; cursor: pointer; }
+.dem-status-ok:hover { text-decoration: underline; }
+.dem-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+.dem-btn { font-family: var(--mono); font-size: 10px; padding: 3px 8px; border-radius: 4px; cursor: pointer; border: 0.5px solid; transition: all 0.12s; background: transparent; }
+.dem-btn-support { color: rgba(255,255,255,0.4); border-color: rgba(255,255,255,0.15); }
+.dem-btn-support:hover { color: var(--text); border-color: rgba(255,255,255,0.3); }
+.dem-btn-respond { color: #EF9F27; border-color: rgba(239,159,39,0.3); }
+.dem-btn-respond:hover { background: rgba(239,159,39,0.1); }
+/* Mini-form support inline */
+.dem-support-form { display: none; margin-top: 6px; }
+.dem-support-form.open { display: flex; gap: 4px; }
+.dem-support-form input { flex: 1; background: rgba(255,255,255,0.05); border: 0.5px solid rgba(255,255,255,0.1); border-radius: 4px; color: var(--text); font-family: var(--mono); font-size: 10px; padding: 4px 7px; outline: none; }
+.dem-support-form button { font-family: var(--mono); font-size: 10px; padding: 4px 8px; background: rgba(255,255,255,0.06); border: 0.5px solid rgba(255,255,255,0.15); color: var(--text); border-radius: 4px; cursor: pointer; }
 </style>
 </head>
 <body>
@@ -176,6 +211,7 @@ html, body { width: 100%; height: 100%; background: var(--bg); color: var(--text
     <p id="vote-counter"></p>
   </div>
   <button id="settings-btn" onclick="toggleSettings()" onmousedown="event.stopPropagation()">&#9881; réglages</button>
+  <button id="btn-demands" onclick="toggleDemands()" onmousedown="event.stopPropagation()">&#9679; demandes</button>
   <button id="wishes-btn" onclick="toggleWishes()" onmousedown="event.stopPropagation()">&#9733; souhaits</button>
   <div id="legend">
     <div class="legend-row">
@@ -495,6 +531,7 @@ function buildWords() {
     el.addEventListener('click', () => {
       if (!wasDrag) {
         autoRotating = false;
+        focusSkill(s);
         openPanel(visibleSkills.indexOf(s));
       }
     });
@@ -525,6 +562,7 @@ function subscribeRealtime() {
     .on('postgres_changes', { event: '*', schema: 'public', table: 'declarations' }, refresh)
     .on('postgres_changes', { event: '*', schema: 'public', table: 'votes' },        refresh)
     .on('postgres_changes', { event: '*', schema: 'public', table: 'categories' },   refresh)
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'demands' }, () => { if (document.getElementById('demands-panel').classList.contains('open')) loadDemands(); })
     .subscribe();
 }
 
@@ -597,25 +635,34 @@ stage.addEventListener('touchend', () => {
 });
 
 
-// ── Focus sur un pôle catégorie ─────────────────────────────────────────────
-function focusCat(catId) {
-  const anchor = catAnchors[catId];
-  if (!anchor) return;
+// ── Focus sur un point de la sphère (catégorie ou compétence) ───────────────
+function focusPoint(pos) {
+  if (!pos) return;
   autoRotating = false;
-  const len = Math.sqrt(anchor.x**2 + anchor.y**2 + anchor.z**2) || 1;
-  const targetRotY = -Math.atan2(anchor.x, anchor.z);
-  const targetRotX = -Math.asin(Math.max(-1, Math.min(1, anchor.y / len)));
+  const len = Math.sqrt(pos.x**2 + pos.y**2 + pos.z**2) || 1;
+  const tY = -Math.atan2(pos.x, pos.z);
+  const tX = -Math.asin(Math.max(-1, Math.min(1, pos.y / len)));
   let frame = 0;
   const fromY = rotY, fromX = rotX, total = 40;
   function step() {
     frame++;
     const t = frame / total;
     const ease = t < 0.5 ? 2*t*t : -1+(4-2*t)*t;
-    rotY = fromY + (targetRotY - fromY) * ease;
-    rotX = fromX + (targetRotX - fromX) * ease;
+    rotY = fromY + (tY - fromY) * ease;
+    rotX = fromX + (tX - fromX) * ease;
     if (frame < total) requestAnimationFrame(step);
   }
   step();
+}
+function focusCat(catId)   { focusPoint(catAnchors[catId]); }
+function focusSkill(skill) {
+  if (skill && skill._pos) focusPoint(skill._pos);
+}
+// focusSkillByName : utilisé depuis le panneau Demandes
+function focusSkillByName(name) {
+  const vs = window._visibleSkills || skills;
+  const s = vs.find(x => x.name.toLowerCase() === name.toLowerCase());
+  if (s) focusSkill(s);
 }
 
 // ── Panneau ───────────────────────────────────────────────────
@@ -761,6 +808,117 @@ function buildWishesList() {
   }).join('');
 }
 
+
+// ── Panneau Demandes ──────────────────────────────────────────────────────────
+let demandsCache = [];
+
+function toggleDemands() {
+  const panel = document.getElementById('demands-panel');
+  panel.classList.toggle('open');
+  if (panel.classList.contains('open')) loadDemands();
+}
+
+async function loadDemands() {
+  const { data, error } = await sb
+    .from('demands')
+    .select('*')
+    .order('created_at', { ascending: false });
+  if (error) { console.error(error); return; }
+  demandsCache = data || [];
+  renderDemands();
+}
+
+function demandScore(d) {
+  return (d.supporters ? d.supporters.length : 0) + 1;
+}
+
+function renderDemands() {
+  const container = document.getElementById('dem-list');
+  const sorted = [...demandsCache].sort((a, b) => demandScore(b) - demandScore(a));
+  if (!sorted.length) {
+    container.innerHTML = '<p style="font-family:var(--mono);font-size:11px;color:rgba(255,255,255,0.25)">Aucune demande pour l'instant</p>';
+    return;
+  }
+
+  container.innerHTML = sorted.map(d => {
+    const score = demandScore(d);
+    const supporters = (d.supporters || []).join(', ');
+    const isSatisfaite = d.status === 'satisfaite';
+    const formUrl = `VOTRE_NETLIFY_URL/form.html`;
+
+    return `<div class="dem-item${isSatisfaite ? ' satisfaite' : ''}" data-id="${d.id}">
+      <div class="dem-skill-name">${d.skill_name}</div>
+      ${d.description ? `<div class="dem-desc">${d.description}</div>` : ''}
+      <div class="dem-meta">
+        ${d.demandeur}${supporters ? ` · ${supporters}` : ''} · ${score} intéressé${score > 1 ? 's' : ''}
+      </div>
+      ${isSatisfaite
+        ? `<div class="dem-status-ok" onclick="focusSkillByName('${d.skill_name.replace(/'/g,"\'")}')">
+            ✓ Compétence disponible — voir dans le nuage →
+           </div>`
+        : `<div class="dem-actions">
+            <button class="dem-btn dem-btn-support" onclick="openSupportForm('${d.id}')">+ Je suis intéressé·e</button>
+            <button class="dem-btn dem-btn-respond" onclick="respondDemand('${d.skill_name.replace(/'/g,"\'")}')">Je peux apporter cette compétence →</button>
+           </div>
+           <div class="dem-support-form" id="support-form-${d.id}">
+             <input type="text" placeholder="Votre prénom" maxlength="40" id="support-name-${d.id}">
+             <button onclick="submitSupport('${d.id}')">OK</button>
+           </div>`
+      }
+    </div>`;
+  }).join('');
+}
+
+async function submitDemand() {
+  const name  = document.getElementById('dem-input-name').value.trim();
+  const desc  = document.getElementById('dem-input-desc').value.trim();
+  const who   = document.getElementById('dem-input-who').value.trim();
+  if (!name) { toast('Saisissez une compétence souhaitée'); return; }
+  if (!who)  { toast('Saisissez votre prénom'); return; }
+
+  const { error } = await sb.from('demands').insert({
+    skill_name: name, description: desc || null, demandeur: who,
+  });
+  if (error) { toast('Erreur : ' + error.message); return; }
+
+  document.getElementById('dem-input-name').value = '';
+  document.getElementById('dem-input-desc').value = '';
+  document.getElementById('dem-input-who').value  = '';
+  toast('Demande ajoutée ✓');
+  await loadDemands();
+}
+
+function openSupportForm(id) {
+  const f = document.getElementById('support-form-' + id);
+  if (f) f.classList.toggle('open');
+}
+
+async function submitSupport(id) {
+  const input = document.getElementById('support-name-' + id);
+  const who = input ? input.value.trim() : '';
+  if (!who) { toast('Saisissez votre prénom'); return; }
+
+  const demand = demandsCache.find(d => d.id === id);
+  if (!demand) return;
+
+  const current = demand.supporters || [];
+  if (current.includes(who)) { toast('Vous êtes déjà inscrit·e'); return; }
+
+  const { error } = await sb.from('demands')
+    .update({ supporters: [...current, who] })
+    .eq('id', id);
+  if (error) { toast('Erreur : ' + error.message); return; }
+
+  toast('Intérêt enregistré ✓');
+  await loadDemands();
+}
+
+function respondDemand(skillName) {
+  const url = `VOTRE_NETLIFY_URL/form.html`;
+  window.open(url, '_blank');
+  toast('Le formulaire s'ouvre — pensez à saisir "' + skillName + '"');
+}
+
 (async()=>{ loadSettings(); bindSettings(); syncSliders(); await loadData(); subscribeRealtime(); await checkSession(); loop(); })();
 </script>
 
@@ -769,6 +927,23 @@ function buildWishesList() {
     <button id="wishes-close" onclick="toggleWishes()">&#10005;</button>
     <div class="wish-panel-title">Souhaits d'atelier</div>
     <div id="wishes-list"><p style="font-family:var(--mono);font-size:11px;color:rgba(255,255,255,0.25)">Chargement…</p></div>
+  </div>
+</div>
+
+<div id="demands-panel">
+  <div id="demands-inner">
+    <button class="sp-close" onclick="toggleDemands()">&#10005;</button>
+    <div class="dem-panel-title">Demandes de compétences</div>
+
+    <!-- Formulaire nouvelle demande -->
+    <div id="dem-form">
+      <input id="dem-input-name" type="text" placeholder="Compétence souhaitée *" maxlength="80">
+      <textarea id="dem-input-desc" rows="2" placeholder="Description courte (optionnel)"></textarea>
+      <input id="dem-input-who" type="text" placeholder="Votre prénom *" maxlength="40">
+      <button id="dem-submit" onclick="submitDemand()">+ Ajouter cette demande</button>
+    </div>
+
+    <div id="dem-list"><p style="font-family:var(--mono);font-size:11px;color:rgba(255,255,255,0.25)">Chargement…</p></div>
   </div>
 </div>
 
