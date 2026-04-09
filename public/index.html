@@ -92,6 +92,8 @@ html, body { width: 100%; height: 100%; background: var(--bg); color: var(--text
 #wishes-panel-inner { padding: 16px 14px; display: flex; flex-direction: column; gap: 0; min-height: 100%; }
 #wishes-btn { position: absolute; bottom: 100px; right: 24px; z-index: 30; background: rgba(22,22,26,0.85); border: 0.5px solid rgba(255,255,255,0.12); color: rgba(255,255,255,0.5); font-family: var(--mono); font-size: 11px; padding: 6px 12px; border-radius: 6px; cursor: pointer; transition: all 0.15s; }
 #wishes-btn:hover { color: var(--text); border-color: rgba(255,255,255,0.25); }
+#aide-btn { position: absolute; bottom: 60px; right: 24px; z-index: 30; width: 32px; height: 32px; border-radius: 50%; background: rgba(22,22,26,0.85); border: 0.5px solid rgba(255,255,255,0.12); color: rgba(255,255,255,0.4); font-family: var(--mono); font-size: 14px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.15s; line-height: 1; }
+#aide-btn:hover { color: var(--text); border-color: rgba(255,255,255,0.25); }
 .wish-item { padding: 8px 0; border-bottom: 0.5px solid rgba(255,255,255,0.06); }
 .wish-item:last-child { border-bottom: none; }
 .wish-name { font-size: 13px; font-weight: 500; color: var(--text); margin-bottom: 4px; line-height: 1.3; }
@@ -213,6 +215,7 @@ html, body { width: 100%; height: 100%; background: var(--bg); color: var(--text
   <button id="settings-btn" onclick="toggleSettings()" onmousedown="event.stopPropagation()">&#9881; réglages</button>
   <button id="btn-demands" onclick="toggleDemands()" onmousedown="event.stopPropagation()">&#9679; demandes</button>
   <button id="wishes-btn" onclick="toggleWishes()" onmousedown="event.stopPropagation()">&#9733; souhaits</button>
+  <button id="aide-btn" onclick="window.open('/aide.html','_blank')" onmousedown="event.stopPropagation()" title="Aide">?</button>
   <div id="legend">
     <div class="legend-row">
       <span class="legend-label">taille = votes</span>
@@ -262,9 +265,9 @@ html, body { width: 100%; height: 100%; background: var(--bg); color: var(--text
 <script>
 const SUPABASE_URL     = 'https://rhqcbghgekqforxhoeip.supabase.co';
 const SUPABASE_ANON    = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJocWNiZ2hnZWtxZm9yeGhvZWlwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU1ODAyNTAsImV4cCI6MjA5MTE1NjI1MH0.vjXf-taDKUQKCcMMC5j9riKYpzV96P4KWVGFJfgHd8g';
-const API_BASE         = 'https://bahut-ia4-skillcloud.netlify.app';
+const API_BASE         = 'https://bahut-ia4-skillcloud.vercel.app';
 const DISCORD_CLIENT   = '1491168797485306022';
-const DISCORD_REDIRECT = `${API_BASE}/.netlify/functions/discord-auth`;
+const DISCORD_REDIRECT = `${API_BASE}/api/discord-auth`;
 const TOTAL_PEOPLE     = 17;
 const MAX_VOTES        = 10;
 const SIZE_MIN         = 11;
@@ -793,7 +796,7 @@ function updateVoteCounter() {
 async function toggleVote() {
   if (!session||!currentSkill) return;
   const method=myVotes.has(currentSkill.id)?'DELETE':'POST';
-  const res=await fetch(`${API_BASE}/.netlify/functions/vote`,{method,credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({skill_id:currentSkill.id})});
+  const res=await fetch(`${API_BASE}/api/vote`,{method,credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({skill_id:currentSkill.id})});
   if (res.ok) { if (method==='POST') myVotes.add(currentSkill.id); else myVotes.delete(currentSkill.id); updateVoteBtn(); updateVoteCounter(); toast(method==='POST'?'Souhait ajouté ✓':'Souhait retiré'); }
   else { const err=await res.json(); toast(err.error||'Erreur'); }
 }
@@ -979,7 +982,7 @@ async function submitSupport(id) {
 }
 
 function respondDemand(skillName) {
-  const url = 'https://bahut-ia4-skillcloud.netlify.app/form.html';
+  const url = 'https://bahut-ia4-skillcloud.vercel.app/form.html';
   window.open(url, '_blank');
   toast('Formulaire ouvert — saisir : ' + skillName);
 }
