@@ -379,10 +379,12 @@ function wordColor(skill) {
 }
 function wordSize(skill) {
   const smax = SIZE_MAX_V || 15;
-  const vt = (skill.votes_count||0) / maxVotes;
   const pt = Math.min((skill.declarers_count||1) / TOTAL_PEOPLE, 1);
-  const base = SIZE_MIN + pt * 4;
-  return Math.round(base + vt * (smax - base));
+  const vt = maxVotes > 0 ? (skill.votes_count||0) / maxVotes : 0;
+  // porteurs donnent 70% de la plage, votes le 30% restant
+  const base  = SIZE_MIN + pt * (smax - SIZE_MIN) * 0.7;
+  const bonus = vt * (smax - SIZE_MIN) * 0.3;
+  return Math.round(base + bonus);
 }
 
 // ── Sphère + placement par pôle ────────────────────────────────
@@ -693,8 +695,10 @@ function refreshPanel() {
   document.getElementById('level-val').textContent  = avgLvl ? avgLvl.toFixed(1)+'/3' : '–';
   document.getElementById('level-fill').style.width = ((avgLvl/3)*100).toFixed(0)+'%';
   document.getElementById('level-fill').style.background = s.color_hex||'#534AB7';
-  const vPct = maxVotes>0 ? Math.round((s.votes_count||0)/maxVotes*100) : 0;
-  document.getElementById('votes-val').textContent  = `${s.votes_count||0} / ${maxVotes} max`;
+  const vPct = maxVotes > 0 ? Math.round((s.votes_count||0)/maxVotes*100) : 0;
+  const votesCount = s.votes_count||0;
+  document.getElementById('votes-val').textContent = votesCount > 0
+    ? `${votesCount} souhait${votesCount>1?'s':''}` : 'aucun souhait';
   document.getElementById('votes-fill').style.width = vPct+'%';
   const declarers = Array.isArray(s.declarers) ? s.declarers : [];
   document.getElementById('panel-people').innerHTML = declarers
