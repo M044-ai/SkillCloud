@@ -176,8 +176,10 @@ header p  { font-size: 13px; color: var(--muted); font-family: var(--mono); line
 
 /* Alerte doublon sur champ compétence */
 .ac-input.duplicate { border-color: var(--danger); background: var(--danger-l); }
-.dup-hint { font-family: var(--mono); font-size: 10px; color: var(--danger); margin-top: 4px; display: none; }
-.dup-hint.visible { display: block; }
+.ac-input.warn-dup  { border-color: #C47C1A; background: #FEF3E2; }
+.dup-hint { font-family: var(--mono); font-size: 10px; margin-top: 4px; display: none; line-height: 1.5; }
+.dup-hint.visible      { display: block; color: var(--danger); }
+.dup-hint.visible-warn { display: block; color: #9A5E10; }
 
 /* Autocomplete prénom */
 #prenom-wrap { position: relative; }
@@ -236,10 +238,9 @@ header p  { font-size: 13px; color: var(--muted); font-family: var(--mono); line
 // ══════════════════════════════════════════════════════
 // CONFIG — remplacer par vos valeurs
 // ══════════════════════════════════════════════════════
-
 const SUPABASE_URL  = 'https://rhqcbghgekqforxhoeip.supabase.co';
 const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJocWNiZ2hnZWtxZm9yeGhvZWlwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU1ODAyNTAsImV4cCI6MjA5MTE1NjI1MH0.vjXf-taDKUQKCcMMC5j9riKYpzV96P4KWVGFJfgHd8g';
-  
+
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
 // ── Données chargées depuis Supabase ──────────────────
@@ -421,7 +422,22 @@ function buildBlocks() {
       catInput, catDrop,
       () => {
         // Si des catégories ont été filtrées par le choix de compétence, les utiliser
-        const pool = catInput._filteredCats || allCategories;
+        let pool = catInput._filteredCats || allCategories;
+        // Exclure les catégories qui mèneraient à un doublon
+        const prenom    = document.getElementById('prenom').value.trim();
+        const skillName = document.getElementById(`skill-input-${i}`)?.value.trim().toLowerCase();
+        if (prenom && skillName && prenomDeclMap[prenom]) {
+          const dupCatIds = new Set(
+            prenomDeclMap[prenom]
+              .filter(d => d.skill_name.toLowerCase() === skillName)
+              .map(d => {
+                const sk = allSkills.find(s => s.id === d.skill_id);
+                return sk ? sk.category_id : null;
+              })
+              .filter(Boolean)
+          );
+          if (dupCatIds.size) pool = pool.filter(c => !dupCatIds.has(c.id));
+        }
         return pool.map(c => ({ id: c.id, name: c.name }));
       },
       (sel) => {
@@ -438,12 +454,21 @@ function buildBlocks() {
     // Autocomplete compétence — filtrée par catégorie si choisie
     const skillInput = document.getElementById(`skill-input-${i}`);
     const skillDrop  = document.getElementById(`skill-drop-${i}`);
+    // Déclencher checkDuplicate à chaque frappe (effacement inclus)
+    skillInput.addEventListener('input', () => checkDuplicate(i));
+
     makeAutocomplete(
       skillInput, skillDrop,
       () => {
+        const prenom = document.getElementById('prenom').value.trim();
         let pool = allSkills;
         if (state[i].catId) {
           pool = allSkills.filter(s => s.category_id === state[i].catId);
+        }
+        // Exclure les compétences déjà déclarées par ce prénom dans cette catégorie
+        if (prenom && prenomDeclMap[prenom]) {
+          const declaredIds = new Set(prenomDeclMap[prenom].map(d => d.skill_id));
+          pool = pool.filter(s => !declaredIds.has(s.id));
         }
         return pool.map(s => ({ id: s.id, name: s.name, count: s.declarers_count }));
       },
@@ -527,8 +552,10 @@ async function submitForm() {
 
   // Vérifier doublons avant soumission
   checkAllDuplicates(prenom);
-  const hasDup = document.querySelector('.ac-input.duplicate');
-  if (hasDup) { showFeedback('Une compétence est déjà déclarée par ce prénom — corrigez avant d\'envoyer.', 'error'); return; }
+  const hasDup  = document.querySelector('.ac-input.duplicate');
+  const hasWarn = document.querySelector('.ac-input.warn-dup');
+  if (hasDup)  { showFeedback('Une compétence est déjà déclarée par ce prénom — corrigez avant d\'envoyer.', 'error'); return; }
+  if (hasWarn) { showFeedback('Une compétence sans catégorie correspond à une entrée existante — vérifiez la catégorie avant d\'envoyer.', 'error'); return; }
 
   const rows = [];
   for (let i = 0; i < 5; i++) {
@@ -726,38 +753,67 @@ function isDuplicate(prenom, skillId) {
 
 function checkAllDuplicates(prenom) {
   for (let i = 0; i < 5; i++) {
-    const s = state[i];
     const skillEl = document.getElementById(`skill-input-${i}`);
     const hintEl  = document.getElementById(`dup-hint-${i}`);
     if (!skillEl || !hintEl) continue;
-    const skill = allSkills.find(x => x.name.toLowerCase() === skillEl.value.trim().toLowerCase()
-      && (s.catId ? x.category_id === s.catId : true));
-    if (skill && isDuplicate(prenom, skill.id)) {
-      skillEl.classList.add('duplicate');
-      hintEl.classList.add('visible');
-    } else {
-      skillEl.classList.remove('duplicate');
-      hintEl.classList.remove('visible');
-    }
+    checkDuplicate(i);
   }
 }
 
 function checkDuplicate(blockIdx) {
-  const prenom = document.getElementById('prenom').value.trim();
-  if (!prenom) return;
-  const s = state[blockIdx];
   const skillEl = document.getElementById(`skill-input-${blockIdx}`);
   const hintEl  = document.getElementById(`dup-hint-${blockIdx}`);
-  const skill = allSkills.find(x =>
-    x.name.toLowerCase() === skillEl.value.trim().toLowerCase() &&
-    (s.catId ? x.category_id === s.catId : true)
-  );
-  if (skill && isDuplicate(prenom, skill.id)) {
-    skillEl.classList.add('duplicate');
-    hintEl.classList.add('visible');
+
+  // Toujours effacer si le champ est vide
+  if (!skillEl.value.trim()) {
+    skillEl.classList.remove('duplicate', 'warn-dup');
+    hintEl.classList.remove('visible', 'visible-warn');
+    hintEl.textContent = '';
+    return;
+  }
+
+  const prenom = document.getElementById('prenom').value.trim();
+  if (!prenom) {
+    skillEl.classList.remove('duplicate', 'warn-dup');
+    hintEl.classList.remove('visible', 'visible-warn');
+    return;
+  }
+
+  const s = state[blockIdx];
+  const skillNameLower = skillEl.value.trim().toLowerCase();
+
+  if (s.catId) {
+    // Catégorie connue → vérification exacte doublon
+    const skill = allSkills.find(x =>
+      x.name.toLowerCase() === skillNameLower && x.category_id === s.catId
+    );
+    if (skill && isDuplicate(prenom, skill.id)) {
+      skillEl.classList.add('duplicate');
+      skillEl.classList.remove('warn-dup');
+      hintEl.className = 'dup-hint visible';
+      hintEl.textContent = '⚠ Déjà déclarée par ce prénom';
+    } else {
+      skillEl.classList.remove('duplicate', 'warn-dup');
+      hintEl.classList.remove('visible', 'visible-warn');
+      hintEl.textContent = '';
+    }
   } else {
-    skillEl.classList.remove('duplicate');
-    hintEl.classList.remove('visible');
+    // Pas de catégorie → chercher toutes les occurrences déclarées par ce prénom
+    const decls = prenomDeclMap[prenom] || [];
+    const matchingDecls = decls.filter(d =>
+      d.skill_name.toLowerCase() === skillNameLower
+    );
+    if (matchingDecls.length) {
+      const catNames = [...new Set(matchingDecls.map(d => d.cat_name))].join(', ');
+      skillEl.classList.add('warn-dup');
+      skillEl.classList.remove('duplicate');
+      hintEl.className = 'dup-hint visible-warn';
+      hintEl.textContent = `ⓘ Déjà déclarée en : ${catNames} — vérifiez la catégorie`;
+    } else {
+      skillEl.classList.remove('duplicate', 'warn-dup');
+      hintEl.classList.remove('visible', 'visible-warn');
+      hintEl.textContent = '';
+    }
   }
 }
 
