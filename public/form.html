@@ -125,13 +125,15 @@ header p  { font-size: 13px; color: var(--muted); font-family: var(--mono); line
 }
 .field-top input {
   width: 100%; padding: 9px 12px;
-  font-family: var(--sans); font-size: 16px; font-weight: 700;
+  font-family: var(--sans); font-size: 15px; font-weight: 700;
   border: 0.5px solid var(--border); border-radius: var(--r);
   background: var(--bg); color: var(--text); outline: none;
   transition: border-color 0.15s;
 }
 .field-top input:focus { border-color: var(--accent); background: var(--surface); }
 .field-top input::placeholder { font-weight: 400; color: var(--muted); }
+/* Le champ prénom est un ac-input dans un field-top — on s'assure que le dropdown passe dessus */
+.field-top .ac-dropdown { z-index: 200; }
 
 /* Bouton submit */
 #btn-submit {
@@ -234,9 +236,10 @@ header p  { font-size: 13px; color: var(--muted); font-family: var(--mono); line
 // ══════════════════════════════════════════════════════
 // CONFIG — remplacer par vos valeurs
 // ══════════════════════════════════════════════════════
+
 const SUPABASE_URL  = 'https://rhqcbghgekqforxhoeip.supabase.co';
 const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJocWNiZ2hnZWtxZm9yeGhvZWlwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU1ODAyNTAsImV4cCI6MjA5MTE1NjI1MH0.vjXf-taDKUQKCcMMC5j9riKYpzV96P4KWVGFJfgHd8g';
-
+  
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
 // ── Données chargées depuis Supabase ──────────────────
@@ -258,16 +261,19 @@ async function loadLists() {
   prenomDeclMap = {};
   (declRes.data || []).forEach(d => {
     if (!prenomDeclMap[d.participant]) prenomDeclMap[d.participant] = [];
-    const skill = allSkills.find(s => s.id === d.skill_id);
+    const skill = (skillRes.data || []).find(s => s.id === d.skill_id);
     const cat   = skill ? allCategories.find(c => c.id === skill.category_id) : null;
     prenomDeclMap[d.participant].push({
       skill_id:   d.skill_id,
-      skill_name: skill ? skill.name : d.skill_id,
+      skill_name: skill ? skill.name : '(compétence inconnue)',
       cat_name:   cat ? cat.name : '—',
       level:      d.level,
     });
   });
+  // allPrenoms inclut aussi les prénoms sans déclarations connues
+  // (cas impossible normalement, mais on sécurise)
   allPrenoms = Object.keys(prenomDeclMap).sort();
+  console.log('[SkillCloud] Prénoms chargés:', allPrenoms.length, allPrenoms);
 
   const seen = document.getElementById('skills-seen');
   if (allSkills.length > 0) {
@@ -522,7 +528,7 @@ async function submitForm() {
   // Vérifier doublons avant soumission
   checkAllDuplicates(prenom);
   const hasDup = document.querySelector('.ac-input.duplicate');
-  if (hasDup) { showFeedback('Une compétence est déjà déclarée par ce prénom — corrigez avant d'envoyer.', 'error'); return; }
+  if (hasDup) { showFeedback('Une compétence est déjà déclarée par ce prénom — corrigez avant d\'envoyer.', 'error'); return; }
 
   const rows = [];
   for (let i = 0; i < 5; i++) {
