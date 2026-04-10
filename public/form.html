@@ -76,6 +76,8 @@ header p  { font-size: 13px; color: var(--muted); font-family: var(--mono); line
 }
 .ac-input:focus { border-color: var(--accent); background: var(--surface); }
 .ac-input::placeholder { color: var(--muted); font-weight: 400; }
+.ac-input.auto-filled { background: var(--success-l); border-color: #9FE1CB; color: var(--success); }
+.ac-input.auto-filled:focus { border-color: var(--success); }
 
 .ac-dropdown {
   position: absolute; top: calc(100% + 4px); left: 0; right: 0;
@@ -151,6 +153,33 @@ header p  { font-size: 13px; color: var(--muted); font-family: var(--mono); line
 #feedback.success { background: var(--success-l); color: var(--success); }
 #feedback.error   { background: var(--danger-l);  color: var(--danger); }
 
+/* ── Layout desktop : form + panneau latéral ── */
+.layout { display: flex; gap: 24px; align-items: flex-start; max-width: 960px; margin: 0 auto; }
+.form-col { flex: 1; min-width: 0; max-width: 580px; }
+.side-col { width: 240px; flex-shrink: 0; position: sticky; top: 24px; }
+@media (max-width: 860px) { .layout { flex-direction: column; } .side-col { width: 100%; position: static; } }
+
+/* Panneau historique prénom */
+#history-panel {
+  background: var(--surface); border: 0.5px solid var(--border);
+  border-radius: 14px; padding: 16px; display: none;
+}
+#history-panel h3 { font-size: 13px; font-weight: 500; margin-bottom: 12px; }
+.hist-item { padding: 7px 0; border-bottom: 0.5px solid var(--border); font-size: 12px; }
+.hist-item:last-child { border-bottom: none; }
+.hist-skill { font-weight: 500; color: var(--text); }
+.hist-cat   { font-family: var(--mono); font-size: 10px; color: var(--muted); margin-top: 2px; }
+.hist-lvl   { font-family: var(--mono); font-size: 10px; margin-top: 2px; }
+.hist-lvl-1 { color: #85B7EB; } .hist-lvl-2 { color: #EF9F27; } .hist-lvl-3 { color: #0F6E56; }
+
+/* Alerte doublon sur champ compétence */
+.ac-input.duplicate { border-color: var(--danger); background: var(--danger-l); }
+.dup-hint { font-family: var(--mono); font-size: 10px; color: var(--danger); margin-top: 4px; display: none; }
+.dup-hint.visible { display: block; }
+
+/* Autocomplete prénom */
+#prenom-wrap { position: relative; }
+
 /* Compteur */
 #skills-seen {
   font-family: var(--mono); font-size: 11px; color: var(--muted);
@@ -161,30 +190,43 @@ header p  { font-size: 13px; color: var(--muted); font-family: var(--mono); line
 </style>
 </head>
 <body>
-<div class="page">
+<div class="layout">
+  <div class="form-col">
 
-  <header>
-    <h1>Mes compétences</h1>
-    <p>Promo Chef de projet IA · Déclarez jusqu'à 5 compétences.<br>
-    Les listes s'enrichissent au fil des réponses — choisissez ou créez librement.</p>
-  </header>
+    <header>
+      <h1>Mes compétences</h1>
+      <p>Promo Chef de projet IA · Déclarez jusqu'à 5 compétences.<br>
+      Les listes s'enrichissent au fil des réponses — choisissez ou créez librement.</p>
+    </header>
 
-  <div id="skills-seen"></div>
+    <div id="skills-seen"></div>
 
-  <!-- Prénom -->
-  <div class="field-top">
-    <div class="field">
-      <label>Prénom *</label>
-      <input id="prenom" type="text" placeholder="ex : Alice" autocomplete="given-name">
+    <!-- Prénom avec autocomplete -->
+    <div class="field-top">
+      <div class="field">
+        <label>Prénom *</label>
+        <div id="prenom-wrap" class="ac-wrap">
+          <input id="prenom" class="ac-input" type="text" placeholder="ex : Alice" autocomplete="off">
+          <div id="prenom-drop" class="ac-dropdown"></div>
+        </div>
+      </div>
     </div>
+
+    <!-- Blocs compétences 1-5 -->
+    <div id="blocks-container"></div>
+
+    <button id="btn-submit" onclick="submitForm()">Enregistrer mes compétences</button>
+    <div id="feedback"></div>
+
   </div>
 
-  <!-- Blocs compétences 1-5 -->
-  <div id="blocks-container"></div>
-
-  <button id="btn-submit" onclick="submitForm()">Enregistrer mes compétences</button>
-  <div id="feedback"></div>
-
+  <!-- Panneau latéral historique -->
+  <div class="side-col">
+    <div id="history-panel">
+      <h3 id="history-title">Compétences déjà saisies</h3>
+      <div id="history-list"></div>
+    </div>
+  </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
@@ -198,16 +240,34 @@ const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFz
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
 // ── Données chargées depuis Supabase ──────────────────
-let allCategories = [];   // [{ id, name }]
-let allSkills     = [];   // [{ id, name, category_id, declarers_count }]
+let allCategories   = [];  // [{ id, name }]
+let allSkills       = [];  // [{ id, name, category_id, declarers_count }]
+let allPrenoms      = [];  // prénoms distincts déjà utilisés
+let prenomDeclMap   = {};  // { prenom: [{ skill_id, skill_name, cat_name, level }] }
 
 async function loadLists() {
-  const [catRes, skillRes] = await Promise.all([
+  const [catRes, skillRes, declRes] = await Promise.all([
     sb.from('categories').select('id, name').order('name'),
     sb.from('skill_cloud_view').select('id, name, category_id, declarers_count').order('name'),
+    sb.from('declarations').select('participant, skill_id, level'),
   ]);
   allCategories = catRes.data  || [];
   allSkills     = skillRes.data || [];
+
+  // Construire la map prénom → déclarations
+  prenomDeclMap = {};
+  (declRes.data || []).forEach(d => {
+    if (!prenomDeclMap[d.participant]) prenomDeclMap[d.participant] = [];
+    const skill = allSkills.find(s => s.id === d.skill_id);
+    const cat   = skill ? allCategories.find(c => c.id === skill.category_id) : null;
+    prenomDeclMap[d.participant].push({
+      skill_id:   d.skill_id,
+      skill_name: skill ? skill.name : d.skill_id,
+      cat_name:   cat ? cat.name : '—',
+      level:      d.level,
+    });
+  });
+  allPrenoms = Object.keys(prenomDeclMap).sort();
 
   const seen = document.getElementById('skills-seen');
   if (allSkills.length > 0) {
@@ -328,6 +388,7 @@ function buildBlocks() {
             placeholder="ex : ${ex.comp}" autocomplete="off">
           <div class="ac-dropdown" id="skill-drop-${i}"></div>
         </div>
+        <div class="dup-hint" id="dup-hint-${i}">⚠ Déjà déclarée par ce prénom</div>
       </div>
 
       <div class="field">
@@ -352,8 +413,20 @@ function buildBlocks() {
     const catDrop  = document.getElementById(`cat-drop-${i}`);
     makeAutocomplete(
       catInput, catDrop,
-      () => allCategories.map(c => ({ id: c.id, name: c.name })),
-      (sel) => { state[i].catId = sel.id; state[i].catName = sel.name; state[i].catIsNew = sel.isNew; }
+      () => {
+        // Si des catégories ont été filtrées par le choix de compétence, les utiliser
+        const pool = catInput._filteredCats || allCategories;
+        return pool.map(c => ({ id: c.id, name: c.name }));
+      },
+      (sel) => {
+        catInput._filteredCats = null; // réinitialiser le filtre après sélection
+        catInput.placeholder = `ex : ${EXEMPLES[i]?.cat || 'Catégorie'}`;
+        state[i].catId    = sel.id;
+        state[i].catName  = sel.name;
+        state[i].catIsNew = sel.isNew;
+        state[i]._autoFilled = false;
+        catInput.classList.remove('auto-filled');
+      }
     );
 
     // Autocomplete compétence — filtrée par catégorie si choisie
@@ -368,9 +441,70 @@ function buildBlocks() {
         }
         return pool.map(s => ({ id: s.id, name: s.name, count: s.declarers_count }));
       },
-      (sel) => { state[i].skillName = sel.name; }
+      (sel) => {
+        state[i].skillName = sel.name;
+        // Remplissage auto de la catégorie si compétence existante
+        if (sel.id && !state[i].catId) {
+          autofillCategory(i, sel.name);
+        }
+        // Si la compétence change (frappe libre), réinitialiser l'auto-fill
+        if (!sel.id) {
+          clearAutofilledCat(i);
+        }
+        // Vérifier doublon
+        checkDuplicate(i);
+      }
     );
   }
+}
+
+// Remplit automatiquement la catégorie quand la compétence est sélectionnée
+function autofillCategory(blockIdx, skillName) {
+  const matches = allSkills.filter(
+    s => s.name.toLowerCase() === skillName.toLowerCase()
+  );
+  if (!matches.length) return;
+
+  const catInput = document.getElementById(`cat-input-${blockIdx}`);
+
+  // Trouver les catégories uniques associées
+  const catIds = [...new Set(matches.map(s => s.category_id))];
+
+  if (catIds.length === 1) {
+    // Cas unique — remplir et verrouiller visuellement
+    const cat = allCategories.find(c => c.id === catIds[0]);
+    if (!cat) return;
+    catInput.value = cat.name;
+    catInput.classList.add('auto-filled');
+    catInput.title = 'Catégorie détectée automatiquement';
+    state[blockIdx].catId   = cat.id;
+    state[blockIdx].catName = cat.name;
+    state[blockIdx].catIsNew = false;
+    state[blockIdx]._autoFilled = true;
+  } else {
+    // Cas multiple — filtrer la liste des catégories
+    // L'utilisateur devra choisir parmi les catégories associées
+    const validCats = allCategories.filter(c => catIds.includes(c.id));
+    catInput.placeholder = 'Plusieurs catégories possibles — choisissez';
+    // Déclencher un focus pour montrer les options filtrées
+    const catDrop = document.getElementById(`cat-drop-${blockIdx}`);
+    // Remplacer temporairement getItems pour ce bloc
+    catInput._filteredCats = validCats;
+    catInput.focus();
+  }
+}
+
+function clearAutofilledCat(blockIdx) {
+  if (!state[blockIdx]._autoFilled) return;
+  const catInput = document.getElementById(`cat-input-${blockIdx}`);
+  catInput.value = '';
+  catInput.classList.remove('auto-filled');
+  catInput.title = '';
+  catInput.placeholder = `ex : ${EXEMPLES[blockIdx]?.cat || 'Catégorie'}`;
+  state[blockIdx].catId   = null;
+  state[blockIdx].catName = '';
+  state[blockIdx].catIsNew = false;
+  state[blockIdx]._autoFilled = false;
 }
 
 function selectLevel(blockIdx, level) {
@@ -384,6 +518,11 @@ function selectLevel(blockIdx, level) {
 async function submitForm() {
   const prenom = document.getElementById('prenom').value.trim();
   if (!prenom) { showFeedback('Veuillez saisir votre prénom.', 'error'); return; }
+
+  // Vérifier doublons avant soumission
+  checkAllDuplicates(prenom);
+  const hasDup = document.querySelector('.ac-input.duplicate');
+  if (hasDup) { showFeedback('Une compétence est déjà déclarée par ce prénom — corrigez avant d'envoyer.', 'error'); return; }
 
   const rows = [];
   for (let i = 0; i < 5; i++) {
@@ -470,15 +609,21 @@ async function submitForm() {
     // Reset après 3s
     setTimeout(() => {
       document.getElementById('prenom').value = '';
+      document.getElementById('history-panel').style.display = 'none';
       state.forEach((s, i) => {
         s.catId = null; s.catName = ''; s.skillName = ''; s.level = null;
-        document.getElementById(`cat-input-${i}`).value = '';
-        document.getElementById(`skill-input-${i}`).value = '';
+        s._autoFilled = false;
+        const si = document.getElementById(`skill-input-${i}`);
+        const ci = document.getElementById(`cat-input-${i}`);
+        const hi = document.getElementById(`dup-hint-${i}`);
+        if (si) { si.value = ''; si.classList.remove('duplicate'); }
+        if (ci) { ci.value = ''; ci.classList.remove('auto-filled'); }
+        if (hi) hi.classList.remove('visible');
         document.querySelectorAll(`#level-row-${i} .level-btn`).forEach(b => b.classList.remove('selected'));
       });
       btn.disabled = false;
       btn.textContent = 'Enregistrer mes compétences';
-      loadLists(); // rafraîchir les listes
+      loadLists().then(initPrenomAC); // rafraîchir listes + prénoms
     }, 3000);
 
   } catch (err) {
@@ -497,10 +642,124 @@ function showFeedback(msg, type) {
   setTimeout(() => el.style.display = 'none', 5000);
 }
 
+// ── Autocomplete prénom ──────────────────────────────
+function initPrenomAC() {
+  const input = document.getElementById('prenom');
+  const drop  = document.getElementById('prenom-drop');
+  let activeIdx = -1;
+
+  function renderDrop(q) {
+    const lower = q.toLowerCase().trim();
+    const matches = lower
+      ? allPrenoms.filter(p => p.toLowerCase().includes(lower))
+      : allPrenoms;
+    if (!matches.length) { drop.classList.remove('open'); return; }
+    activeIdx = -1;
+    drop.innerHTML = matches.map((p, i) =>
+      `<div class="ac-option" data-idx="${i}" data-name="${p}">${p}</div>`
+    ).join('');
+    drop.querySelectorAll('.ac-option').forEach(el => {
+      el.addEventListener('mousedown', e => {
+        e.preventDefault();
+        input.value = el.dataset.name;
+        drop.classList.remove('open');
+        onPrenomSelect(el.dataset.name);
+      });
+    });
+    drop.classList.add('open');
+  }
+
+  input.addEventListener('input', () => renderDrop(input.value));
+  input.addEventListener('focus', () => renderDrop(input.value));
+  input.addEventListener('blur',  () => setTimeout(() => drop.classList.remove('open'), 150));
+  input.addEventListener('keydown', e => {
+    const opts = drop.querySelectorAll('.ac-option');
+    if (e.key === 'ArrowDown') activeIdx = Math.min(activeIdx+1, opts.length-1);
+    else if (e.key === 'ArrowUp') activeIdx = Math.max(activeIdx-1, 0);
+    else if (e.key === 'Enter' && activeIdx >= 0) {
+      e.preventDefault(); opts[activeIdx].dispatchEvent(new MouseEvent('mousedown'));
+    } else if (e.key === 'Escape') drop.classList.remove('open');
+    opts.forEach((o, i) => o.classList.toggle('active', i === activeIdx));
+  });
+  // Si l'utilisateur quitte le champ sans sélectionner, on tente quand même
+  input.addEventListener('blur', () => {
+    const v = input.value.trim();
+    if (v) onPrenomSelect(v);
+  });
+}
+
+function onPrenomSelect(prenom) {
+  const decls = prenomDeclMap[prenom];
+  const panel = document.getElementById('history-panel');
+  if (!decls || !decls.length) { panel.style.display = 'none'; return; }
+
+  const lvlLabel = n => ['','Découverte','Pratique','Expert'][n] || '';
+  const lvlClass = n => ['','hist-lvl-1','hist-lvl-2','hist-lvl-3'][n] || '';
+
+  document.getElementById('history-title').textContent =
+    `${prenom} — ${decls.length} compétence${decls.length > 1 ? 's' : ''} déjà saisie${decls.length > 1 ? 's' : ''}`;
+
+  document.getElementById('history-list').innerHTML = decls
+    .sort((a, b) => a.cat_name.localeCompare(b.cat_name))
+    .map(d => `<div class="hist-item">
+      <div class="hist-skill">${d.skill_name}</div>
+      <div class="hist-cat">${d.cat_name}</div>
+      <div class="hist-lvl ${lvlClass(d.level)}">${'●'.repeat(d.level||0)}${'○'.repeat(3-(d.level||0))} ${lvlLabel(d.level)}</div>
+    </div>`).join('');
+
+  panel.style.display = 'block';
+  // Vérifier les doublons sur les blocs déjà remplis
+  checkAllDuplicates(prenom);
+}
+
+// ── Détection doublon ────────────────────────────────
+function isDuplicate(prenom, skillId) {
+  const decls = prenomDeclMap[prenom] || [];
+  return decls.some(d => d.skill_id === skillId);
+}
+
+function checkAllDuplicates(prenom) {
+  for (let i = 0; i < 5; i++) {
+    const s = state[i];
+    const skillEl = document.getElementById(`skill-input-${i}`);
+    const hintEl  = document.getElementById(`dup-hint-${i}`);
+    if (!skillEl || !hintEl) continue;
+    const skill = allSkills.find(x => x.name.toLowerCase() === skillEl.value.trim().toLowerCase()
+      && (s.catId ? x.category_id === s.catId : true));
+    if (skill && isDuplicate(prenom, skill.id)) {
+      skillEl.classList.add('duplicate');
+      hintEl.classList.add('visible');
+    } else {
+      skillEl.classList.remove('duplicate');
+      hintEl.classList.remove('visible');
+    }
+  }
+}
+
+function checkDuplicate(blockIdx) {
+  const prenom = document.getElementById('prenom').value.trim();
+  if (!prenom) return;
+  const s = state[blockIdx];
+  const skillEl = document.getElementById(`skill-input-${blockIdx}`);
+  const hintEl  = document.getElementById(`dup-hint-${blockIdx}`);
+  const skill = allSkills.find(x =>
+    x.name.toLowerCase() === skillEl.value.trim().toLowerCase() &&
+    (s.catId ? x.category_id === s.catId : true)
+  );
+  if (skill && isDuplicate(prenom, skill.id)) {
+    skillEl.classList.add('duplicate');
+    hintEl.classList.add('visible');
+  } else {
+    skillEl.classList.remove('duplicate');
+    hintEl.classList.remove('visible');
+  }
+}
+
 // ── Init ──────────────────────────────────────────────
 (async () => {
   await loadLists();
   buildBlocks();
+  initPrenomAC();
 })();
 </script>
 </body>
