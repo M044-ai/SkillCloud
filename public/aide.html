@@ -150,7 +150,8 @@ kbd { font-family: var(--mono); font-size: 11px; background: var(--surface2); bo
         <div class="step-dot" style="background:rgba(239,159,39,0.15);color:var(--c4)">2</div>
         <div class="step-body">
           <h3>Saisir votre prénom</h3>
-          <p>Juste votre prénom — c'est ce qui apparaîtra dans les fiches compétences du nuage. Utilisez toujours le même prénom si vous revenez.</p>
+          <p>Commencez à taper — les prénoms déjà utilisés apparaissent en suggestion. Choisissez le vôtre si vous avez déjà soumis, ou tapez-le librement s'il est nouveau. <strong>Utilisez toujours le même prénom</strong> : il est votre identifiant dans l'outil.</p>
+          <p style="margin-top:8px">Si votre prénom est reconnu, un panneau s'ouvre à droite avec vos compétences déjà déclarées.</p>
         </div>
       </div>
 
@@ -158,12 +159,26 @@ kbd { font-family: var(--mono); font-size: 11px; background: var(--surface2); bo
         <div class="step-dot" style="background:rgba(93,202,165,0.15);color:var(--c2)">3</div>
         <div class="step-body">
           <h3>Remplir jusqu'à 5 compétences</h3>
-          <p>Pour chaque compétence : choisissez une catégorie, saisissez le nom (les compétences déjà existantes s'autocomplètent), puis choisissez votre niveau.</p>
-          <div class="levels">
-            <span class="lvl lvl-1">● Découverte — notions</span>
-            <span class="lvl lvl-2">●● Pratique — expérience</span>
-            <span class="lvl lvl-3">●●● Expert — peut animer</span>
+          <p>Pour chaque compétence, trois champs :</p>
+          <div class="cards" style="margin-top:10px">
+            <div class="card">
+              <div class="card-head"><span class="dot" style="background:var(--c1)"></span>Compétence</div>
+              <p>Tapez un mot-clé — les compétences existantes s'autocomplètent. Si vous en sélectionnez une déjà connue, <strong>la catégorie se remplit automatiquement</strong>. Si elle est dans plusieurs catégories, le champ vous propose les choix possibles.</p>
+            </div>
+            <div class="card">
+              <div class="card-head"><span class="dot" style="background:var(--c4)"></span>Catégorie</div>
+              <p>Choisissez parmi les catégories existantes ou créez-en une nouvelle. Si la compétence a été auto-détectée, ce champ est déjà rempli (fond vert).</p>
+            </div>
+            <div class="card">
+              <div class="card-head"><span class="dot" style="background:var(--c2)"></span>Niveau</div>
+              <div class="levels" style="margin-top:6px">
+                <span class="lvl lvl-1">● Découverte — notions</span>
+                <span class="lvl lvl-2">●● Pratique — expérience</span>
+                <span class="lvl lvl-3">●●● Expert — peut animer</span>
+              </div>
+            </div>
           </div>
+          <div class="tip" style="margin-top:10px">Si le champ compétence devient rouge, c'est que cette compétence est déjà déclarée pour votre prénom. Passez au bloc suivant ou modifiez.</div>
         </div>
       </div>
 
@@ -176,7 +191,7 @@ kbd { font-family: var(--mono); font-size: 11px; background: var(--surface2); bo
       </div>
 
       <div class="tip">
-        <strong>Vous pouvez revenir plusieurs fois.</strong> Pas de limite — si vous avez oublié une compétence ou changé d'avis sur votre niveau, resoumettez. Les déclarations s'accumulent par prénom.
+        <strong>Vous pouvez revenir plusieurs fois.</strong> Si vous avez oublié une compétence, resoumettez avec votre prénom. Le panneau latéral vous rappellera ce que vous avez déjà déclaré, et le formulaire vous signalera si vous essayez de dupliquer une entrée existante.
       </div>
     </div>
 
