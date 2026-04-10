@@ -563,6 +563,7 @@ async function submitForm() {
     const skillName = document.getElementById(`skill-input-${i}`).value.trim();
     const catName   = document.getElementById(`cat-input-${i}`).value.trim();
     if (!skillName) { if (i === 0) { showFeedback('La compétence 1 est obligatoire.', 'error'); return; } continue; }
+    if (!catName)   { showFeedback(`Choisissez une catégorie pour la compétence ${i+1}.`, 'error'); document.getElementById(`cat-input-${i}`).focus(); return; }
     if (!s.level)   { showFeedback(`Choisissez un niveau pour la compétence ${i+1}.`, 'error'); return; }
     rows.push({ catName, skillName, level: s.level, catIsNew: !s.catId && !!catName });
   }
